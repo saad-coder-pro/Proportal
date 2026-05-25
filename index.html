@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Tawakkal Cell World — Invoice & Warranty Tools</title>
+    <meta name="description" content="Professional invoice and warranty generator with QR validation.">
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#f97316">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tawakkal Cell">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
+    <!-- Manifest link – will be set dynamically -->
+    <link rel="manifest" id="manifest-link" href="#">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --accent: #f97316;
+            --accent-light: #fb923c;
+            --bg-deep: #06080c;
+            --bg-surface: #0c0e14;
+            --bg-card: #11141d;
+            --bg-input: #181b24;
+            --text-primary: #f2f3f7;
+            --text-secondary: #b0b3bf;
+            --text-muted: #757a89;
+            --border-subtle: rgba(255,255,255,0.05);
+            --border-medium: rgba(255,255,255,0.12);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --font-sans: 'Inter', sans-serif;
+            --font-heading: 'DM Sans', sans-serif;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 70px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+        .sidebar .logo-icon { font-size: 1.6rem; color: var(--accent); }
+
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .topbar {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        .tabs { display: flex; gap: 12px; }
+        .tab-btn {
+            padding: 10px 22px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-medium);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn.active {
+            background: rgba(249,115,22,0.15);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(249,115,22,0.2);
+        }
+        .tab-btn:hover { border-color: var(--accent); color: #fff; }
+
+        .content { padding: 24px; display: flex; justify-content: center; flex: 1; overflow-y: auto; }
+        .tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            width: 100%;
+            max-width: 860px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+            overflow-x: hidden;
+        }
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-field { margin-bottom: 16px; }
+        .form-field label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        .form-field input, .form-field textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .form-field input:focus, .form-field textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(249,115,22,0.2);
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(249,115,22,0.3);
+        }
+        .btn:hover {
+            box-shadow: 0 10px 28px rgba(249,115,22,0.5);
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-medium);
+            color: var(--text-secondary);
+            box-shadow: none;
+        }
+        .btn-outline:hover { border-color: var(--accent); color: #fff; }
+
+        .table-wrapper { overflow-x: auto; margin: 12px 0; }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 500px;
+        }
+        .items-table th {
+            text-align: left;
+            padding: 12px 8px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .items-table td { padding: 8px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+        .items-table input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            outline: none;
+            min-width: 60px;
+        }
+        .add-item-btn {
+            background: transparent;
+            border: 1px dashed var(--border-medium);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .add-item-btn:hover { border-color: var(--accent); color: #fff; }
+
+        .total-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 20px;
+        }
+        .total-box .amount { font-size: 2rem; font-weight: 800; color: #fff; }
+
+        /* Colorful invoice preview */
+        .invoice-preview {
+            display: none; position:fixed; left:-9999px;
+            width:800px; background:#fff; font-family:'Inter',sans-serif; color:#1a1a1a;
+            border-radius:24px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.15);
+        }
+        .preview-header {
+            background: linear-gradient(135deg, #ff7e1d, #ff5500);
+            padding: 35px 40px; color:#fff;
+        }
+        .preview-header h1 { font-size:2.4rem; font-weight:900; margin:0; }
+        .preview-body { padding:30px 40px; }
+        .preview-items { width:100%; border-collapse:collapse; margin:20px 0; }
+        .preview-items th { background:#f8f9fa; padding:14px 18px; text-align:left; font-weight:700; }
+        .preview-items td { padding:12px 18px; border-bottom:1px solid #eee; }
+        .preview-total { text-align:right; font-size:2rem; font-weight:800; color:#ff5500; margin-top:20px; }
+
+        /* QR card */
+        .qr-container {
+            background:#fff; border-radius:24px; padding:30px; text-align:center; color:#111;
+            max-width: 100%; overflow: hidden;
+        }
+        .qr-container canvas { margin:20px auto; max-width:100%; height:auto; }
+        .warranty-details {
+            background:#f8f9fa; border-radius:16px; padding:20px; margin:20px 0; text-align:left;
+            word-break: break-word;
+        }
+        .validation-result-card { word-break: break-word; }
+
+        @media (max-width: 600px) {
+            .grid-2col { grid-template-columns:1fr; }
+            .sidebar { display:none; }
+            .tabs { flex-wrap:wrap; gap:8px; }
+            .items-table { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar"><i class="fa-solid fa-mobile-screen logo-icon"></i></div>
+    <div class="main">
+        <div class="topbar">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="invoice"><i class="fa-solid fa-file-invoice"></i> Invoice</button>
+                <button class="tab-btn" data-tab="warranty"><i class="fa-solid fa-qrcode"></i> Warranty</button>
+                <button class="tab-btn" data-tab="validator"><i class="fa-solid fa-check-circle"></i> Validator</button>
+            </div>
+        </div>
+
+        <div class="content" id="contentArea">
+            <!-- Invoice Generator Tab -->
+            <div id="invoiceSection" class="tool-card">
+                <div class="section-title"><i class="fa-solid fa-store" style="color:var(--accent-light);"></i> Shop Details</div>
+                <div class="grid-2col">
+                    <div class="form-field"><label>Shop Name</label><input type="text" id="shopName" value="Tawakkal Cell World"></div>
+                    <div class="form-field"><label>Address</label><input type="text" id="shopAddress" value="kushmanchi ,telangana"></div>
+                    <div class="form-field"><label>Email</label><input type="email" id="shopEmail" value="iamabdulmajid786@gmail.com"></div>
+                    <div class="form-field"><label>Phone</label><input type="tel" id="shopPhone" value="+91 7287897867"></div>
+                </div>
+                <div class="section-title" style="margin-top:28px;"><i class="fa-solid fa-receipt"></i> Invoice Info</div>
+                <div class="grid-2col">
+                    <div class="form-field"><label>Invoice #</label><input type="text" id="invNumber" readonly style="opacity:0.8;"></div>
+                    <div class="form-field"><label>Date</label><input type="date" id="invDate"></div>
+                    <div class="form-field"><label>Client Name</label><input type="text" id="clientName" placeholder="Customer name"></div>
+                    <div class="form-field"><label>Client Phone</label><input type="tel" id="clientPhone" placeholder="Phone number"></div>
+                </div>
+                <div class="section-title">Items</div>
+                <div class="table-wrapper">
+                    <table class="items-table" id="itemsTable">
+                        <thead><tr><th>Description</th><th>Qty</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
+                        <tbody>
+                            <tr class="item-row">
+                                <td><input type="text" class="desc" placeholder=""></td>
+                                <td><input type="number" class="qty" value="1" min="1"></td>
+                                <td><input type="number" class="rate" value="0" step="0.01"></td>
+                                <td><span class="row-total">₹0.00</span></td>
+                                <td><i class="fa-solid fa-trash remove-row" style="color:var(--text-muted);cursor:pointer;"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="add-item-btn" id="addItemBtn"><i class="fa-solid fa-plus"></i> Add item</button>
+                <div class="total-section"><div class="total-box"><span class="label">Total</span><div class="amount" id="grandTotal">₹0.00</div></div></div>
+                <div style="text-align:right; margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
+                    <button class="btn" id="generatePDFBtn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                    <button class="btn btn-outline" id="printInvoiceBtn"><i class="fa-solid fa-print"></i> Print</button>
+                </div>
+            </div>
+
+            <!-- Warranty Generator Tab -->
+            <div id="warrantySection" class="tool-card" style="display:none;">
+                <div class="section-title"><i class="fa-solid fa-shield-haltered"></i> Warranty Card Generator</div>
+                <div class="grid-2col">
+                    <div class="form-field"><label>Customer Name</label><input type="text" id="wCustomer" placeholder=""></div>
+                    <div class="form-field"><label>Device Model</label><input type="text" id="wDevice" placeholder=""></div>
+                    <div class="form-field"><label>Serial Number</label><input type="text" id="wSerial" placeholder=""></div>
+                    <div class="form-field"><label>Purchase Date</label><input type="date" id="wPurchaseDate"></div>
+                    <div class="form-field"><label>Warranty (months)</label><input type="number" id="wDuration" value="12" min="1"></div>
+                    <div class="form-field"><label>Notes</label><input type="text" id="wNotes" placeholder=""></div>
+                </div>
+                <button class="btn" id="generateWarrantyBtn" style="margin-top:20px;"><i class="fa-solid fa-qrcode"></i> Generate Warranty QR</button>
+                <div id="warrantyOutput" style="margin-top:30px; display:none;">
+                    <div class="qr-container">
+                        <h3 style="color:#333; margin-bottom:10px;">Warranty Certificate</h3>
+                        <canvas id="qrCanvas"></canvas>
+                        <div class="warranty-details">
+                            <p><strong>Customer:</strong> <span id="wOutCustomer"></span></p>
+                            <p><strong>Device:</strong> <span id="wOutDevice"></span></p>
+                            <p><strong>Serial:</strong> <span id="wOutSerial"></span></p>
+                            <p><strong>Valid Until:</strong> <span id="wOutExpiry"></span></p>
+                        </div>
+                        <button class="btn btn-outline" id="downloadWarrantyBtn"><i class="fa-solid fa-download"></i> Save Card</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warranty Validator Tab -->
+            <div id="validatorSection" class="tool-card" style="display:none;">
+                <div class="section-title"><i class="fa-solid fa-check-double"></i> Warranty Validator</div>
+                <button class="btn" id="scanQRBtn" style="margin-bottom:20px;"><i class="fa-solid fa-camera"></i> Scan QR Code</button>
+                <div id="reader" style="width:300px; margin:0 auto 20px; max-width:100%;"></div>
+                <div class="form-field"><label>or paste QR content manually</label><input type="text" id="manualQRInput" placeholder="Paste encrypted warranty string"></div>
+                <button class="btn" id="validateManualBtn">Validate</button>
+                <div id="validationResult" style="margin-top:20px; display:none;" class="validation-result-card"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colorful designer invoice preview -->
+    <div id="invoicePreview" class="invoice-preview">
+        <div class="preview-header">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h1 id="prevShopName">Tawakkal Cell World</h1>
+                    <p style="margin:8px 0 0; font-size:1rem;" id="prevShopAddress">123 MG Road, Mumbai</p>
+                    <p style="margin:4px 0; font-size:0.9rem;" id="prevShopContact">iamabdulmajid786@gmail.com | +91 7287897867</p>
+                </div>
+                <div style="text-align:right;">
+                    <h2 style="font-size:2.2rem; font-weight:900;">INVOICE</h2>
+                    <p style="font-size:1.1rem; margin:10px 0 0;"><strong>#<span id="prevInvNumber">INV-004</span></strong></p>
+                    <p style="font-size:0.9rem;">Date: <span id="prevDate"></span></p>
+                </div>
+            </div>
+        </div>
+        <div class="preview-body">
+            <strong style="font-size:1rem;">Bill To:</strong>
+            <p style="font-size:1.2rem; font-weight:700; margin:8px 0 2px;" id="prevClientName"></p>
+            <p style="font-size:0.9rem; margin:0 0 20px 0; color:#555;" id="prevClientPhone"></p>
+            <table class="preview-items" id="prevItemsTable">
+                <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <div class="preview-total">Total: <span id="prevTotal"></span></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ========== PWA Setup ==========
+            // Generate manifest blob
+            const manifestData = {
+                name: "Tawakkal Cell World - Invoice & Warranty",
+                short_name: "Tawakkal Cell",
+                description: "Professional invoice and warranty generator",
+                start_url: ".",
+                display: "standalone",
+                background_color: "#06080c",
+                theme_color: "#f97316",
+                icons: [{
+                    src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>",
+                    sizes: "100x100",
+                    type: "image/svg+xml"
+                }]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            document.getElementById('manifest-link').href = manifestUrl;
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => console.log('Service Worker registered', reg.scope))
+                        .catch(err => console.error('Service Worker registration failed', err));
+                });
+            }
+
+            // ========== Tab switching ==========
+            const tabs = document.querySelectorAll('.tab-btn');
+            const sections = {
+                invoice: document.getElementById('invoiceSection'),
+                warranty: document.getElementById('warrantySection'),
+                validator: document.getElementById('validatorSection')
+            };
+            tabs.forEach(btn => btn.addEventListener('click', () => {
+                tabs.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                Object.values(sections).forEach(s => s.style.display = 'none');
+                sections[btn.dataset.tab].style.display = 'block';
+                if (btn.dataset.tab !== 'validator' && window.html5QrCode) {
+                    window.html5QrCode.stop().catch(e => {});
+                }
+            }));
+
+            // ========== INVOICE ==========
+            const today = new Date();
+            const day = today.getDate();
+            const month = today.getMonth() + 1;
+            const year = today.getFullYear();
+            const invNumberStr = `INV-${day}.${month}.${year}`;
+            document.getElementById('invNumber').value = invNumberStr;
+
+            const invDate = document.getElementById('invDate');
+            invDate.value = today.toISOString().slice(0,10);
+
+            function updateInvoiceTotal() {
+                let total = 0;
+                document.querySelectorAll('#itemsTable .item-row').forEach(row => {
+                    const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                    const rate = parseFloat(row.querySelector('.rate').value) || 0;
+                    const rowTotal = qty * rate;
+                    row.querySelector('.row-total').textContent = '₹' + rowTotal.toFixed(2);
+                    total += rowTotal;
+                });
+                document.getElementById('grandTotal').textContent = '₹' + total.toFixed(2);
+            }
+
+            function bindRowEvents(row) {
+                row.querySelector('.qty').addEventListener('input', updateInvoiceTotal);
+                row.querySelector('.rate').addEventListener('input', updateInvoiceTotal);
+                row.querySelector('.remove-row').addEventListener('click', () => {
+                    if (document.querySelectorAll('#itemsTable .item-row').length > 1) {
+                        row.remove();
+                        updateInvoiceTotal();
+                    }
+                });
+            }
+            document.querySelectorAll('#itemsTable .item-row').forEach(row => bindRowEvents(row));
+            document.getElementById('addItemBtn').addEventListener('click', () => {
+                const tr = document.createElement('tr');
+                tr.className = 'item-row';
+                tr.innerHTML = `
+                    <td><input type="text" class="desc" placeholder=""></td>
+                    <td><input type="number" class="qty" value="1" min="1"></td>
+                    <td><input type="number" class="rate" value="0" step="0.01"></td>
+                    <td><span class="row-total">₹0.00</span></td>
+                    <td><i class="fa-solid fa-trash remove-row" style="color:var(--text-muted);cursor:pointer;"></i></td>
+                `;
+                document.querySelector('#itemsTable tbody').appendChild(tr);
+                bindRowEvents(tr);
+                updateInvoiceTotal();
+            });
+            updateInvoiceTotal();
+
+            function fillInvoicePreview() {
+                document.getElementById('prevShopName').textContent = document.getElementById('shopName').value;
+                document.getElementById('prevShopAddress').textContent = document.getElementById('shopAddress').value;
+                document.getElementById('prevShopContact').textContent = `${document.getElementById('shopEmail').value} | ${document.getElementById('shopPhone').value}`;
+                document.getElementById('prevInvNumber').textContent = document.getElementById('invNumber').value;
+                document.getElementById('prevDate').textContent = invDate.value;
+                document.getElementById('prevClientName').textContent = document.getElementById('clientName').value || 'Client Name';
+                document.getElementById('prevClientPhone').textContent = document.getElementById('clientPhone').value ? `📞 ${document.getElementById('clientPhone').value}` : '';
+
+                const prevBody = document.querySelector('#prevItemsTable tbody');
+                prevBody.innerHTML = '';
+                document.querySelectorAll('#itemsTable .item-row').forEach(row => {
+                    const desc = row.querySelector('.desc').value;
+                    const qty = row.querySelector('.qty').value;
+                    const rate = row.querySelector('.rate').value;
+                    const amount = row.querySelector('.row-total').textContent;
+                    prevBody.innerHTML += `<tr><td>${desc}</td><td>${qty}</td><td>₹${parseFloat(rate).toFixed(2)}</td><td>${amount}</td></tr>`;
+                });
+                document.getElementById('prevTotal').textContent = document.getElementById('grandTotal').textContent;
+            }
+
+            async function downloadPDF() {
+                fillInvoicePreview();
+                const preview = document.getElementById('invoicePreview');
+                preview.style.display = 'block';
+                const canvas = await html2canvas(preview, { scale: 2, backgroundColor: '#ffffff' });
+                preview.style.display = 'none';
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save(`Invoice-${document.getElementById('invNumber').value}.pdf`);
+            }
+
+            document.getElementById('generatePDFBtn').addEventListener('click', downloadPDF);
+            document.getElementById('printInvoiceBtn').addEventListener('click', () => {
+                fillInvoicePreview();
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write('<html><head><title>Invoice</title><style>body{font-family:Inter,sans-serif;margin:0;}</style></head><body>');
+                printWindow.document.write(document.getElementById('invoicePreview').outerHTML);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.print();
+            });
+
+            // ========== WARRANTY GENERATOR ==========
+            const wPurchaseDate = document.getElementById('wPurchaseDate');
+            wPurchaseDate.value = today.toISOString().slice(0,10);
+            const SECRET_KEY = 'TwcWarrantySecret2025!';
+
+            function generateWarrantyQR() {
+                const customer = document.getElementById('wCustomer').value || 'N/A';
+                const device = document.getElementById('wDevice').value || 'N/A';
+                const serial = document.getElementById('wSerial').value || 'N/A';
+                const purchase = wPurchaseDate.value;
+                const duration = parseInt(document.getElementById('wDuration').value) || 12;
+                const notes = document.getElementById('wNotes').value || '';
+                const expiryDate = new Date(purchase);
+                expiryDate.setMonth(expiryDate.getMonth() + duration);
+                const expiryStr = expiryDate.toISOString().slice(0,10);
+
+                const payload = { customer, device, serial, purchase, expiry: expiryStr, notes, t: Date.now() };
+                const payloadStr = JSON.stringify(payload);
+                const signature = CryptoJS.HmacSHA256(payloadStr, SECRET_KEY).toString();
+                const qrContent = btoa(encodeURIComponent(JSON.stringify({ data: payload, sig: signature })));
+
+                const qrCanvas = document.getElementById('qrCanvas');
+                QRCode.toCanvas(qrCanvas, qrContent, { width: 220, margin: 1 }, (err) => {
+                    if (err) console.error(err);
+                });
+
+                document.getElementById('wOutCustomer').textContent = customer;
+                document.getElementById('wOutDevice').textContent = device;
+                document.getElementById('wOutSerial').textContent = serial;
+                document.getElementById('wOutExpiry').textContent = expiryStr;
+                document.getElementById('warrantyOutput').style.display = 'block';
+                window._warrantyQRData = qrContent;
+            }
+
+            document.getElementById('generateWarrantyBtn').addEventListener('click', generateWarrantyQR);
+
+            document.getElementById('downloadWarrantyBtn').addEventListener('click', () => {
+                const canvas = document.getElementById('qrCanvas');
+                if (!canvas) return;
+                const link = document.createElement('a');
+                link.download = 'warranty-card.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+
+            // ========== WARRANTY VALIDATOR ==========
+            let html5QrCode;
+            function startScanner() {
+                const reader = document.getElementById('reader');
+                reader.innerHTML = '';
+                html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        validateQRContent(decodedText);
+                        html5QrCode.stop().then(() => { reader.innerHTML = ''; });
+                    },
+                    (errorMessage) => { /* ignore */ }
+                ).catch(err => alert('Camera error: ' + err));
+            }
+
+            function validateQRContent(qrText) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(atob(qrText)));
+                    if (!decoded.data || !decoded.sig) throw new Error('Invalid format');
+                    const dataStr = JSON.stringify(decoded.data);
+                    const expectedSig = CryptoJS.HmacSHA256(dataStr, SECRET_KEY).toString();
+                    if (expectedSig !== decoded.sig) {
+                        showValidationResult(false, '❌ QR has been tampered with! Signature mismatch.');
+                        return;
+                    }
+                    const { customer, device, serial, expiry, purchase, notes } = decoded.data;
+                    const now = new Date();
+                    const expiryDate = new Date(expiry);
+                    const isValid = now <= expiryDate;
+                    const status = isValid ? '✅ Valid' : '⏰ Expired';
+                    const color = isValid ? '#2e7d32' : '#c62828';
+                    document.getElementById('validationResult').innerHTML = `
+                        <div style="background:${isValid?'#e8f5e9':'#ffebee'}; border-radius:16px; padding:20px; color:#111;">
+                            <h3 style="color:${color};">Warranty ${status}</h3>
+                            <p><strong>Customer:</strong> ${customer}</p>
+                            <p><strong>Device:</strong> ${device}</p>
+                            <p><strong>Serial:</strong> ${serial || '-'}</p>
+                            <p><strong>Purchase:</strong> ${purchase}</p>
+                            <p><strong>Expiry:</strong> ${expiry}</p>
+                            <p><strong>Notes:</strong> ${notes || '-'}</p>
+                        </div>`;
+                    document.getElementById('validationResult').style.display = 'block';
+                } catch (e) {
+                    showValidationResult(false, '❌ Invalid QR code content.');
+                }
+            }
+
+            function showValidationResult(success, message) {
+                document.getElementById('validationResult').style.display = 'block';
+                document.getElementById('validationResult').innerHTML = `
+                    <div style="background:${success?'#e8f5e9':'#ffebee'}; border-radius:16px; padding:20px; color:#111;">${message}</div>`;
+            }
+
+            document.getElementById('scanQRBtn').addEventListener('click', startScanner);
+            document.getElementById('validateManualBtn').addEventListener('click', () => {
+                const manualInput = document.getElementById('manualQRInput').value.trim();
+                if (!manualInput) return alert('Please enter QR content.');
+                validateQRContent(manualInput);
+            });
+
+            // GSAP animations
+            gsap.from('.sidebar', { x: -30, opacity:0, duration:0.5 });
+            gsap.from('.topbar', { y: -20, opacity:0, duration:0.4 });
+            gsap.from('.tool-card', { opacity:0, y:30, duration:0.6, delay:0.2 });
+        })();
+    </script>
+</body>
+</html>
