@@ -2,646 +2,1696 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Tawakkal Cell World — Invoice & Warranty Tools</title>
-    <meta name="description" content="Professional invoice and warranty generator with QR validation.">
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#f97316">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Tawakkal Cell">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
-    <!-- Manifest link – will be set dynamically -->
-    <link rel="manifest" id="manifest-link" href="#">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-
-    <!-- Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
+    <title>Tawakkal Cell World – Warranty, Scanner & Invoice</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Crypto & QR libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js">
+    </script>
+    <!-- html2canvas + jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
     <style>
         :root {
-            --accent: #f97316;
-            --accent-light: #fb923c;
-            --bg-deep: #06080c;
-            --bg-surface: #0c0e14;
-            --bg-card: #11141d;
-            --bg-input: #181b24;
-            --text-primary: #f2f3f7;
-            --text-secondary: #b0b3bf;
-            --text-muted: #757a89;
-            --border-subtle: rgba(255,255,255,0.05);
-            --border-medium: rgba(255,255,255,0.12);
-            --radius-sm: 10px;
-            --radius-md: 16px;
-            --radius-lg: 22px;
-            --font-sans: 'Inter', sans-serif;
-            --font-heading: 'DM Sans', sans-serif;
+            --bg-primary: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --bg-input: #141414;
+            --neon-orange: #ff6a1f;
+            --neon-orange-glow: #ff8c42;
+            --neon-orange-light: #ffb380;
+            --border-color: #2a2a2a;
+            --danger: #ff3b3b;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: 0.25s ease;
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-display: 'Nunito', sans-serif;
+            --stepper-btn-size: 34px;
+            --stepper-btn-size-mobile: 40px;
         }
 
-        * { margin:0; padding:0; box-sizing:border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: var(--font-sans);
-            background: var(--bg-deep);
-            color: var(--text-primary);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .sidebar {
-            width: 70px;
-            background: var(--bg-surface);
-            border-right: 1px solid var(--border-subtle);
+            background: var(--bg-primary);
+            color: #e8e8e8;
+            font-family: var(--font-body);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 24px 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            z-index: 10;
+            padding: 2rem 1.5rem;
+            background-image: radial-gradient(ellipse at 50% 0%, rgba(255, 106, 31, 0.04) 0%, transparent 60%);
+            background-attachment: fixed;
         }
-        .sidebar .logo-icon { font-size: 1.6rem; color: var(--accent); }
 
-        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-
-        .topbar {
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        .tabs { display: flex; gap: 12px; }
-        .tab-btn {
-            padding: 10px 22px;
-            border-radius: 60px;
-            font-weight: 600;
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cc5518;
+            border-radius: 10px;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .app-header .logo-icon {
+            font-size: 2.8rem;
+            color: var(--neon-orange);
+            text-shadow: 0 0 12px rgba(255, 106, 31, 0.5);
+            animation: pulse-glow 2.8s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%,
+            100% {
+                text-shadow: 0 0 12px rgba(255, 106, 31, 0.5), 0 0 35px rgba(255, 106, 31, 0.2);
+            }
+            50% {
+                text-shadow: 0 0 22px rgba(255, 106, 31, 0.8), 0 0 55px rgba(255, 106, 31, 0.4);
+            }
+        }
+        .app-header h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 2.2rem;
+            color: var(--neon-orange);
+            text-shadow: 0 0 12px rgba(255, 106, 31, 0.5);
+            margin-top: 0.4rem;
+            letter-spacing: -0.5px;
+        }
+        .app-header .subtitle {
+            color: #777;
             font-size: 0.85rem;
-            border: 1px solid var(--border-medium);
-            background: transparent;
-            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 0.2rem;
+        }
+
+        .tab-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 0.4rem;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tab-btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
+            background: transparent;
+            color: #999;
+            border: none;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
         }
         .tab-btn.active {
-            background: rgba(249,115,22,0.15);
-            border-color: var(--accent);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(249,115,22,0.2);
+            background: var(--neon-orange);
+            color: #0a0a0a;
+            box-shadow: 0 0 10px rgba(255, 106, 31, 0.4);
         }
-        .tab-btn:hover { border-color: var(--accent); color: #fff; }
 
-        .content { padding: 24px; display: flex; justify-content: center; flex: 1; overflow-y: auto; }
-        .tool-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 30px;
+        .tab-panel {
+            display: none;
             width: 100%;
-            max-width: 860px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.45);
-            overflow-x: hidden;
+            max-width: 1300px;
+            flex-direction: column;
+            gap: 2rem;
         }
+        .tab-panel.active {
+            display: flex;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-orange), var(--neon-orange-glow), var(--neon-orange),
+                    transparent);
+            opacity: 0.7;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
         .section-title {
-            font-family: var(--font-heading);
-            font-size: 1.1rem;
+            font-family: var(--font-display);
             font-weight: 700;
-            margin-bottom: 16px;
-            color: #fff;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            color: var(--neon-orange-light);
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.6rem;
         }
-        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .form-field { margin-bottom: 16px; }
-        .form-field label {
-            display: block;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            letter-spacing: 0.5px;
-        }
-        .form-field input, .form-field textarea {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--bg-input);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: #fff;
-            font-size: 0.85rem;
-            outline: none;
-        }
-        .form-field input:focus, .form-field textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 12px rgba(249,115,22,0.2);
+        .section-title i {
+            color: var(--neon-orange);
+            text-shadow: 0 0 6px rgba(255, 106, 31, 0.45);
         }
 
-        .btn {
-            padding: 12px 28px;
-            border-radius: 60px;
-            font-weight: 600;
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .form-group label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: #b0b0b0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .form-group label i {
+            color: var(--neon-orange);
+            font-size: 0.7rem;
+        }
+        .form-group input,
+        .form-group textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 0.8rem;
+            color: #e8e8e8;
+            font-family: var(--font-body);
             font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
+            transition: var(--transition);
+            outline: none;
+            width: 100%;
+            min-width: 0;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 10px rgba(255, 106, 31, 0.2);
+        }
+        input[type="date"] {
+            color-scheme: dark;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        .btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #f97316, #ea580c);
-            color: #fff;
-            box-shadow: 0 6px 20px rgba(249,115,22,0.3);
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            font-family: var(--font-body);
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            white-space: nowrap;
         }
-        .btn:hover {
-            box-shadow: 0 10px 28px rgba(249,115,22,0.5);
-            transform: translateY(-1px);
+        .btn-primary {
+            background: var(--neon-orange);
+            color: #0a0a0a;
+            box-shadow: 0 0 6px rgba(255, 106, 31, 0.45);
+        }
+        .btn-primary:hover {
+            background: #ff7a35;
+            box-shadow: 0 0 12px rgba(255, 106, 31, 0.5);
         }
         .btn-outline {
             background: transparent;
-            border: 1px solid var(--border-medium);
-            color: var(--text-secondary);
-            box-shadow: none;
+            color: var(--neon-orange);
+            border-color: rgba(255, 106, 31, 0.5);
         }
-        .btn-outline:hover { border-color: var(--accent); color: #fff; }
+        .btn-outline:hover {
+            background: rgba(255, 106, 31, 0.08);
+            border-color: var(--neon-orange);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: #777;
+            border-color: var(--border-color);
+        }
+        .btn-ghost:hover {
+            color: #e8e8e8;
+            border-color: #555;
+        }
 
-        .table-wrapper { overflow-x: auto; margin: 12px 0; }
-        .items-table {
+        /* Certificate preview */
+        .cert-preview {
+            background: white;
+            color: #1a1a1a;
+            font-family: var(--font-body);
+            width: 297mm;
+            height: 210mm;
+            padding: 15mm;
+            position: relative;
+            box-sizing: border-box;
+            margin: 0 auto;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 8px double #ff6a1f;
+            outline: 3px solid #ffb380;
+            outline-offset: -12px;
+            transform: scale(0.7);
+            transform-origin: top left;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .cert-preview {
+                transform: scale(0.5);
+            }
+        }
+        .cert-inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Scanner */
+        #videoContainer {
             width: 100%;
-            border-collapse: collapse;
+            max-width: 400px;
+            aspect-ratio: 1;
+            background: #000;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--neon-orange);
+            box-shadow: inset 0 0 30px rgba(255, 106, 31, 0.3);
+            pointer-events: none;
+        }
+        .detail-card {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
             font-size: 0.85rem;
-            min-width: 500px;
         }
-        .items-table th {
-            text-align: left;
-            padding: 12px 8px;
-            color: var(--text-muted);
-            font-weight: 600;
+        .detail-label {
+            color: var(--neon-orange-light);
+            font-weight: 700;
+        }
+        .valid-badge {
+            background: #27ae60;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.8rem;
+        }
+        .expired-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.8rem;
+        }
+        .hidden {
+            display: none;
+        }
+        .passphrase-group {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        .passphrase-group input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem;
+            color: #e8e8e8;
+        }
+
+        /* Invoice specific */
+        .invoice-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .invoice-form-panel {
+            flex: 1 1 500px;
+            max-width: 620px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 2rem 1.8rem;
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .invoice-form-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-orange), var(--neon-orange-glow), var(--neon-orange),
+                    transparent);
+            opacity: 0.7;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .invoice-preview-panel {
+            flex: 1 1 500px;
+            max-width: 620px;
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: sticky;
+            top: 1.5rem;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .invoice-preview-header {
+            background: #1a1a1a;
+            padding: 0.6rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #333;
+            flex-shrink: 0;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot.red {
+            background: #ff5f56;
+        }
+        .dot.yellow {
+            background: #ffbd2e;
+        }
+        .dot.green {
+            background: #27c93f;
+        }
+        .invoice-preview-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 2rem;
+            background: #ffffff;
+            color: #1a1a1a;
+            font-family: var(--font-body);
+        }
+        .invoice-doc {
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        /* Line items (invoice) */
+        .line-items-container {
+            margin: 1rem 0 1.5rem;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        .line-items-header {
+            display: grid;
+            grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 0.5fr;
+            gap: 0.5rem;
+            padding: 0 0.3rem 0.5rem;
+            font-size: 0.68rem;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 0.7rem;
-            border-bottom: 1px solid var(--border-subtle);
+            color: #777;
+            letter-spacing: 0.4px;
+            min-width: 620px;
         }
-        .items-table td { padding: 8px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
-        .items-table input {
+        .line-item-row {
+            display: grid;
+            grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 0.5fr;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            min-width: 620px;
+        }
+        .line-item-row input.desc-input {
             width: 100%;
             background: var(--bg-input);
-            border: 1px solid var(--border-subtle);
-            color: #fff;
-            padding: 8px;
-            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.55rem 0.5rem;
+            color: #e8e8e8;
             font-size: 0.8rem;
             outline: none;
-            min-width: 60px;
+            transition: var(--transition);
         }
-        .add-item-btn {
-            background: transparent;
-            border: 1px dashed var(--border-medium);
-            color: var(--text-secondary);
-            padding: 10px 20px;
-            border-radius: 60px;
+        .line-item-row input.desc-input:focus {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 10px rgba(255, 106, 31, 0.2);
+        }
+        .stepper-group {
+            display: flex;
+            align-items: center;
+            gap: 0.15rem;
+            width: 100%;
+            min-width: 0;
+        }
+        .stepper-btn {
+            width: var(--stepper-btn-size);
+            height: var(--stepper-btn-size);
+            min-width: var(--stepper-btn-size);
+            min-height: var(--stepper-btn-size);
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--neon-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .stepper-btn:hover {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 8px rgba(255, 106, 31, 0.3);
+            background: #1c110a;
+        }
+        .stepper-btn:active {
+            background: #2a1508;
+            transform: scale(0.93);
+            transition: 0.08s ease;
+        }
+        .stepper-group input {
+            flex: 1;
+            min-width: 0;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.55rem 0.25rem;
+            color: #e8e8e8;
+            font-size: 0.8rem;
+            text-align: center;
+            font-family: monospace;
+            outline: none;
+            transition: var(--transition);
+        }
+        .stepper-group input:focus {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 10px rgba(255, 106, 31, 0.2);
+        }
+        .stepper-group input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .stepper-group input[type="number"]::-webkit-inner-spin-button,
+        .stepper-group input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .amount-input {
+            background: #1c110a !important;
+            border: 1px solid rgba(255, 106, 31, 0.25) !important;
+            border-radius: var(--radius-sm);
+            padding: 0.55rem 0.5rem;
+            color: var(--neon-orange-light) !important;
+            font-family: monospace;
+            font-weight: 700;
+            text-align: right;
+            pointer-events: none;
+            width: 100%;
+            font-size: 0.8rem;
+        }
+        .btn-remove-row {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--danger);
+            cursor: pointer;
+            width: var(--stepper-btn-size);
+            height: var(--stepper-btn-size);
+            min-width: var(--stepper-btn-size);
+            min-height: var(--stepper-btn-size);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            justify-self: center;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-remove-row:hover {
+            background: rgba(255, 59, 59, 0.12);
+            border-color: rgba(255, 59, 59, 0.4);
+            box-shadow: 0 0 12px rgba(255, 59, 59, 0.4);
+        }
+        .btn-add-row {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 10px;
+            gap: 0.5rem;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            color: var(--neon-orange);
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.3rem;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
-        .add-item-btn:hover { border-color: var(--accent); color: #fff; }
+        .btn-add-row:hover {
+            border-color: var(--neon-orange);
+            background: rgba(255, 106, 31, 0.06);
+            box-shadow: 0 0 12px rgba(255, 106, 31, 0.2);
+        }
 
-        .total-section {
+        .totals-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
             display: flex;
-            justify-content: flex-end;
-            margin-top: 24px;
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 20px;
+            flex-direction: column;
+            gap: 0.5rem;
         }
-        .total-box .amount { font-size: 2rem; font-weight: 800; color: #fff; }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #b0b0b0;
+        }
+        .total-row.grand-total {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--neon-orange);
+            text-shadow: 0 0 6px rgba(255, 106, 31, 0.45);
+            border-top: 2px solid rgba(255, 106, 31, 0.3);
+            padding-top: 0.8rem;
+            margin-top: 0.3rem;
+            font-family: var(--font-display);
+        }
+        .total-value {
+            font-family: monospace;
+            font-weight: 700;
+        }
 
-        /* Colorful invoice preview */
-        .invoice-preview {
-            display: none; position:fixed; left:-9999px;
-            width:800px; background:#fff; font-family:'Inter',sans-serif; color:#1a1a1a;
-            border-radius:24px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.15);
+        /* Invoice preview internals */
+        .circular-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6a1f, #ff8c42);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.5rem;
+            box-shadow: 0 6px 18px rgba(255, 106, 31, 0.25);
+            border: 2px solid #fff;
+            margin-right: 1rem;
+            flex-shrink: 0;
         }
-        .preview-header {
-            background: linear-gradient(135deg, #ff7e1d, #ff5500);
-            padding: 35px 40px; color:#fff;
+        .inv-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 2px dashed #ff6a1f;
+            padding-bottom: 1.2rem;
+            margin-bottom: 1.8rem;
         }
-        .preview-header h1 { font-size:2.4rem; font-weight:900; margin:0; }
-        .preview-body { padding:30px 40px; }
-        .preview-items { width:100%; border-collapse:collapse; margin:20px 0; }
-        .preview-items th { background:#f8f9fa; padding:14px 18px; text-align:left; font-weight:700; }
-        .preview-items td { padding:12px 18px; border-bottom:1px solid #eee; }
-        .preview-total { text-align:right; font-size:2rem; font-weight:800; color:#ff5500; margin-top:20px; }
-
-        /* QR card */
-        .qr-container {
-            background:#fff; border-radius:24px; padding:30px; text-align:center; color:#111;
-            max-width: 100%; overflow: hidden;
+        .company-info h2 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: #1a1a1a;
         }
-        .qr-container canvas { margin:20px auto; max-width:100%; height:auto; }
-        .warranty-details {
-            background:#f8f9fa; border-radius:16px; padding:20px; margin:20px 0; text-align:left;
+        .company-info .tagline {
+            font-size: 0.75rem;
+            color: #ff6a1f;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-top: 0.2rem;
+        }
+        .company-info p {
+            font-size: 0.78rem;
+            color: #555;
+            margin: 0.15rem 0;
+        }
+        .invoice-badge {
+            margin-left: auto;
+            text-align: right;
+        }
+        .badge-label {
+            background: #ff6a1f;
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            font-family: var(--font-display);
+            box-shadow: 0 4px 12px rgba(255, 106, 31, 0.3);
+        }
+        .inv-number {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 0.3rem;
+            font-weight: 600;
+        }
+        .meta-row {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            background: #fef9f5;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #444;
+        }
+        .bill-to-box {
+            background: #fafafa;
+            border-left: 4px solid #ff6a1f;
+            padding: 1rem;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 1.8rem;
+        }
+        .bill-to-box strong {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #333;
+        }
+        .bill-to-box p {
+            margin: 0.1rem 0;
+            font-size: 0.85rem;
+            color: #444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.2rem;
+            table-layout: auto;
             word-break: break-word;
         }
-        .validation-result-card { word-break: break-word; }
+        table thead th {
+            background: #ff6a1f;
+            color: white;
+            padding: 0.7rem 0.8rem;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            text-align: left;
+        }
+        table thead th:last-child,
+        table thead th:nth-child(4) {
+            text-align: right;
+        }
+        table thead th:nth-child(2),
+        table thead th:nth-child(3) {
+            text-align: center;
+        }
+        table tbody td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid #ffe8dc;
+            font-size: 0.8rem;
+            color: #333;
+            word-break: break-word;
+        }
+        table tbody td:last-child,
+        table tbody td:nth-child(4) {
+            text-align: right;
+            font-family: monospace;
+            font-weight: 600;
+        }
+        table tbody td:nth-child(2),
+        table tbody td:nth-child(3) {
+            text-align: center;
+        }
+        .inv-totals {
+            text-align: right;
+            font-size: 0.8rem;
+            border-top: 2px solid #ff6a1f;
+            padding-top: 0.8rem;
+            background: #fffaf7;
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        .inv-total-line {
+            display: flex;
+            justify-content: flex-end;
+            gap: 2rem;
+            padding: 0.2rem 0;
+            color: #555;
+        }
+        .inv-total-line.grand {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #ff6a1f;
+            border-top: 2px dashed #ff6a1f;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            font-family: var(--font-display);
+        }
+        .inv-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
 
+        @media (max-width: 900px) {
+            .invoice-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+            .invoice-form-panel,
+            .invoice-preview-panel {
+                max-width: 100%;
+                flex: 1 1 auto;
+                width: 100%;
+            }
+            .invoice-preview-panel {
+                position: relative;
+                top: auto;
+                max-height: none;
+                min-height: 400px;
+            }
+            .invoice-preview-scroll {
+                max-height: 70vh;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 1.2rem 0.8rem;
+            }
+            .app-header h1 {
+                font-size: 1.7rem;
+            }
+            .app-header .logo-icon {
+                font-size: 2.2rem;
+            }
+            .card {
+                padding: 1.5rem 1rem;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+            .line-items-header,
+            .line-item-row {
+                min-width: 520px;
+            }
+            .btn-row {
+                gap: 0.5rem;
+            }
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.75rem;
+            }
+        }
         @media (max-width: 600px) {
-            .grid-2col { grid-template-columns:1fr; }
-            .sidebar { display:none; }
-            .tabs { flex-wrap:wrap; gap:8px; }
-            .items-table { min-width: auto; }
+            .line-items-container {
+                overflow-x: visible;
+                -webkit-overflow-scrolling: auto;
+            }
+            .line-items-header {
+                display: none;
+            }
+            .line-item-row {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 0.4rem;
+                min-width: auto;
+                background: #1e1e1e;
+                border: 1px solid #2a2a2a;
+                border-radius: 10px;
+                padding: 0.7rem 0.6rem;
+                margin-bottom: 0.7rem;
+                align-items: start;
+                position: relative;
+            }
+            .line-item-row input.desc-input {
+                grid-column: 1 / -1;
+                font-size: 0.82rem;
+                padding: 0.6rem 0.5rem;
+                border-radius: 6px;
+            }
+            .line-item-row .stepper-group:nth-of-type(1) {
+                grid-column: 1;
+            }
+            .line-item-row .stepper-group:nth-of-type(2) {
+                grid-column: 2;
+            }
+            .line-item-row .stepper-group:nth-of-type(3) {
+                grid-column: 3;
+            }
+            .line-item-row .amount-input {
+                grid-column: 1 / -1;
+                text-align: right;
+                font-size: 0.9rem;
+                padding: 0.6rem 0.5rem;
+                font-weight: 700;
+            }
+            .line-item-row .btn-remove-row {
+                grid-column: 1 / -1;
+                justify-self: center;
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+                margin-top: 0.2rem;
+            }
+            .stepper-group {
+                flex-wrap: wrap;
+                gap: 2px;
+                justify-content: center;
+            }
+            .stepper-group::before {
+                content: attr(data-label);
+                width: 100%;
+                display: block;
+                font-size: 0.6rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: #999;
+                letter-spacing: 0.3px;
+                text-align: center;
+                margin-bottom: 1px;
+                order: -1;
+            }
+            .stepper-btn {
+                width: var(--stepper-btn-size-mobile);
+                height: var(--stepper-btn-size-mobile);
+                min-width: var(--stepper-btn-size-mobile);
+                min-height: var(--stepper-btn-size-mobile);
+                font-size: 0.8rem;
+            }
+            .stepper-group input {
+                font-size: 0.78rem;
+                padding: 0.5rem 0.2rem;
+            }
+            .btn-add-row {
+                width: 100%;
+                justify-content: center;
+                padding: 0.7rem;
+                font-size: 0.85rem;
+            }
+            .btn-remove-row {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="sidebar"><i class="fa-solid fa-mobile-screen logo-icon"></i></div>
-    <div class="main">
-        <div class="topbar">
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="invoice"><i class="fa-solid fa-file-invoice"></i> Invoice</button>
-                <button class="tab-btn" data-tab="warranty"><i class="fa-solid fa-qrcode"></i> Warranty</button>
-                <button class="tab-btn" data-tab="validator"><i class="fa-solid fa-check-circle"></i> Validator</button>
+    <div class="app-header">
+        <span class="logo-icon"><i class="fa-solid fa-shield-haltered"></i></span>
+        <h1>Tawakkal Cell World</h1>
+        <p class="subtitle">Warranty, Scanner & Invoice</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="generator"><i class="fa-solid fa-certificate"></i> Warranty</button>
+        <button class="tab-btn" data-tab="scanner"><i class="fa-solid fa-qrcode"></i> Scanner</button>
+        <button class="tab-btn" data-tab="invoice"><i class="fa-solid fa-file-invoice"></i> Invoice</button>
+    </div>
+
+    <!-- ==================== WARRANTY GENERATOR PANEL ==================== -->
+    <div class="tab-panel active" id="generatorPanel">
+        <div class="card">
+            <div class="section-title"><i class="fa-solid fa-user-pen"></i> Customer & Product Details</div>
+            <div class="form-grid">
+                <div class="form-group" style="grid-column:1/-1;"><label><i class="fa-solid fa-user"></i> Customer
+                        Name</label><input type="text" id="custName" placeholder="Full name"></div>
+                <div class="form-group"><label><i class="fa-solid fa-phone"></i> Phone</label><input type="text"
+                        id="custPhone" placeholder="Phone"></div>
+                <div class="form-group"><label><i class="fa-solid fa-envelope"></i> Email</label><input type="email"
+                        id="custEmail" placeholder="Email"></div>
+                <div class="form-group"><label><i class="fa-solid fa-mobile-screen"></i> Product</label><input type="text"
+                        id="product" placeholder="e.g. iPhone 15"></div>
+                <div class="form-group"><label><i class="fa-solid fa-barcode"></i> Serial / IMEI</label><input type="text"
+                        id="serial" placeholder="Serial number"></div>
+                <div class="form-group"><label><i class="fa-solid fa-calendar"></i> Purchase Date</label><input type="date"
+                        id="purchaseDate"></div>
+                <div class="form-group"><label><i class="fa-solid fa-clock"></i> Warranty (months)</label><input
+                        type="number" id="duration" value="12" min="1"></div>
+                <div class="form-group" style="grid-column:1/-1;"><label><i class="fa-solid fa-pen-to-square"></i> Coverage
+                        Details</label><textarea id="warrantyDetails" rows="2" placeholder="What is covered..."></textarea>
+                </div>
+            </div>
+            <div class="section-title"><i class="fa-solid fa-lock"></i> Encryption Passphrase</div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label><i class="fa-solid fa-key"></i> Secret Key</label>
+                <input type="text" id="encryptKey" value="TawakkalCellWarranty!">
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnGenerateCert"><i class="fa-solid fa-certificate"></i> Generate
+                    Certificate</button>
+                <button class="btn btn-outline" id="btnPrintCert"><i class="fa-solid fa-print"></i> Print (PDF)</button>
             </div>
         </div>
-
-        <div class="content" id="contentArea">
-            <!-- Invoice Generator Tab -->
-            <div id="invoiceSection" class="tool-card">
-                <div class="section-title"><i class="fa-solid fa-store" style="color:var(--accent-light);"></i> Shop Details</div>
-                <div class="grid-2col">
-                    <div class="form-field"><label>Shop Name</label><input type="text" id="shopName" value="Tawakkal Cell World"></div>
-                    <div class="form-field"><label>Address</label><input type="text" id="shopAddress" value="kushmanchi ,telangana"></div>
-                    <div class="form-field"><label>Email</label><input type="email" id="shopEmail" value="iamabdulmajid786@gmail.com"></div>
-                    <div class="form-field"><label>Phone</label><input type="tel" id="shopPhone" value="+91 7287897867"></div>
-                </div>
-                <div class="section-title" style="margin-top:28px;"><i class="fa-solid fa-receipt"></i> Invoice Info</div>
-                <div class="grid-2col">
-                    <div class="form-field"><label>Invoice #</label><input type="text" id="invNumber" readonly style="opacity:0.8;"></div>
-                    <div class="form-field"><label>Date</label><input type="date" id="invDate"></div>
-                    <div class="form-field"><label>Client Name</label><input type="text" id="clientName" placeholder="Customer name"></div>
-                    <div class="form-field"><label>Client Phone</label><input type="tel" id="clientPhone" placeholder="Phone number"></div>
-                </div>
-                <div class="section-title">Items</div>
-                <div class="table-wrapper">
-                    <table class="items-table" id="itemsTable">
-                        <thead><tr><th>Description</th><th>Qty</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
-                        <tbody>
-                            <tr class="item-row">
-                                <td><input type="text" class="desc" placeholder=""></td>
-                                <td><input type="number" class="qty" value="1" min="1"></td>
-                                <td><input type="number" class="rate" value="0" step="0.01"></td>
-                                <td><span class="row-total">₹0.00</span></td>
-                                <td><i class="fa-solid fa-trash remove-row" style="color:var(--text-muted);cursor:pointer;"></i></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <button class="add-item-btn" id="addItemBtn"><i class="fa-solid fa-plus"></i> Add item</button>
-                <div class="total-section"><div class="total-box"><span class="label">Total</span><div class="amount" id="grandTotal">₹0.00</div></div></div>
-                <div style="text-align:right; margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
-                    <button class="btn" id="generatePDFBtn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
-                    <button class="btn btn-outline" id="printInvoiceBtn"><i class="fa-solid fa-print"></i> Print</button>
-                </div>
-            </div>
-
-            <!-- Warranty Generator Tab -->
-            <div id="warrantySection" class="tool-card" style="display:none;">
-                <div class="section-title"><i class="fa-solid fa-shield-haltered"></i> Warranty Card Generator</div>
-                <div class="grid-2col">
-                    <div class="form-field"><label>Customer Name</label><input type="text" id="wCustomer" placeholder=""></div>
-                    <div class="form-field"><label>Device Model</label><input type="text" id="wDevice" placeholder=""></div>
-                    <div class="form-field"><label>Serial Number</label><input type="text" id="wSerial" placeholder=""></div>
-                    <div class="form-field"><label>Purchase Date</label><input type="date" id="wPurchaseDate"></div>
-                    <div class="form-field"><label>Warranty (months)</label><input type="number" id="wDuration" value="12" min="1"></div>
-                    <div class="form-field"><label>Notes</label><input type="text" id="wNotes" placeholder=""></div>
-                </div>
-                <button class="btn" id="generateWarrantyBtn" style="margin-top:20px;"><i class="fa-solid fa-qrcode"></i> Generate Warranty QR</button>
-                <div id="warrantyOutput" style="margin-top:30px; display:none;">
-                    <div class="qr-container">
-                        <h3 style="color:#333; margin-bottom:10px;">Warranty Certificate</h3>
-                        <canvas id="qrCanvas"></canvas>
-                        <div class="warranty-details">
-                            <p><strong>Customer:</strong> <span id="wOutCustomer"></span></p>
-                            <p><strong>Device:</strong> <span id="wOutDevice"></span></p>
-                            <p><strong>Serial:</strong> <span id="wOutSerial"></span></p>
-                            <p><strong>Valid Until:</strong> <span id="wOutExpiry"></span></p>
-                        </div>
-                        <button class="btn btn-outline" id="downloadWarrantyBtn"><i class="fa-solid fa-download"></i> Save Card</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Warranty Validator Tab -->
-            <div id="validatorSection" class="tool-card" style="display:none;">
-                <div class="section-title"><i class="fa-solid fa-check-double"></i> Warranty Validator</div>
-                <button class="btn" id="scanQRBtn" style="margin-bottom:20px;"><i class="fa-solid fa-camera"></i> Scan QR Code</button>
-                <div id="reader" style="width:300px; margin:0 auto 20px; max-width:100%;"></div>
-                <div class="form-field"><label>or paste QR content manually</label><input type="text" id="manualQRInput" placeholder="Paste encrypted warranty string"></div>
-                <button class="btn" id="validateManualBtn">Validate</button>
-                <div id="validationResult" style="margin-top:20px; display:none;" class="validation-result-card"></div>
+        <div class="card" style="overflow-x: auto;">
+            <div class="section-title"><i class="fa-solid fa-eye"></i> Preview (A4 Landscape)</div>
+            <div id="certPreviewContainer" style="display: flex; justify-content: center;">
+                <p style="color:#777;">Fill details and click "Generate Certificate".</p>
             </div>
         </div>
     </div>
 
-    <!-- Colorful designer invoice preview -->
-    <div id="invoicePreview" class="invoice-preview">
-        <div class="preview-header">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h1 id="prevShopName">Tawakkal Cell World</h1>
-                    <p style="margin:8px 0 0; font-size:1rem;" id="prevShopAddress">123 MG Road, Mumbai</p>
-                    <p style="margin:4px 0; font-size:0.9rem;" id="prevShopContact">iamabdulmajid786@gmail.com | +91 7287897867</p>
-                </div>
-                <div style="text-align:right;">
-                    <h2 style="font-size:2.2rem; font-weight:900;">INVOICE</h2>
-                    <p style="font-size:1.1rem; margin:10px 0 0;"><strong>#<span id="prevInvNumber">INV-004</span></strong></p>
-                    <p style="font-size:0.9rem;">Date: <span id="prevDate"></span></p>
-                </div>
+    <!-- ==================== SCANNER PANEL ==================== -->
+    <div class="tab-panel" id="scannerPanel">
+        <div class="card" style="display: flex; flex-direction: column; align-items: center;">
+            <div class="section-title"><i class="fa-solid fa-camera"></i> Camera Scanner</div>
+            <div id="videoContainer">
+                <video id="video" autoplay playsinline></video>
+                <div class="scan-overlay"></div>
+            </div>
+            <div class="passphrase-group">
+                <i class="fa-solid fa-key" style="color:var(--neon-orange);"></i>
+                <input type="text" id="scannerPassphrase" value="TawakkalCellWarranty!" placeholder="Encryption key">
+            </div>
+            <div class="btn-row" style="justify-content: center;">
+                <button class="btn btn-primary" id="startCamera"><i class="fa-solid fa-play"></i> Start Camera</button>
+                <button class="btn btn-outline" id="stopCamera"><i class="fa-solid fa-stop"></i> Stop</button>
+            </div>
+            <p style="margin-top:1rem; font-size:0.8rem; color:#777;"><i class="fa-solid fa-circle-info"></i> Point camera
+                at the certificate QR code.</p>
+        </div>
+        <div class="card">
+            <div class="section-title"><i class="fa-solid fa-clipboard-check"></i> Decrypted Data</div>
+            <div id="noScanData">No certificate scanned yet. Start the camera and align the QR code.</div>
+            <div id="scanResult" class="hidden">
+                <div class="detail-card" id="warrantyDetailsCard"></div>
+                <div id="validityStatus" style="text-align:center; margin:1rem 0;"></div>
             </div>
         </div>
-        <div class="preview-body">
-            <strong style="font-size:1rem;">Bill To:</strong>
-            <p style="font-size:1.2rem; font-weight:700; margin:8px 0 2px;" id="prevClientName"></p>
-            <p style="font-size:0.9rem; margin:0 0 20px 0; color:#555;" id="prevClientPhone"></p>
-            <table class="preview-items" id="prevItemsTable">
-                <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
-                <tbody></tbody>
-            </table>
-            <div class="preview-total">Total: <span id="prevTotal"></span></div>
+    </div>
+
+    <!-- ==================== INVOICE GENERATOR PANEL ==================== -->
+    <div class="tab-panel" id="invoicePanel">
+        <div class="invoice-container">
+            <!-- Invoice Form -->
+            <div class="invoice-form-panel">
+                <div class="section-title"><i class="fa-solid fa-shop"></i> Shop Details</div>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label><i class="fa-solid fa-signature"></i> Shop Name</label>
+                        <input type="text" id="invCompanyName" value="Tawakkal Cell World">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label><i class="fa-solid fa-location-dot"></i> Address</label>
+                        <input type="text" id="invCompanyAddress" value="Kushmanchi">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-map"></i> City / State / Country</label>
+                        <input type="text" id="invCompanyCityState" value="Telangana, India">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-phone"></i> Phone / Email</label>
+                        <input type="text" id="invCompanyContact"
+                        value="7287897867 | iamabdulmajid786@gmail.com">
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="fa-solid fa-file-invoice"></i> Invoice Details</div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-hashtag"></i> Invoice #</label>
+                        <input type="text" id="invInvoiceNumber" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-calendar"></i> Issue Date</label>
+                        <input type="date" id="invIssueDate">
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="fa-solid fa-user"></i> Bill To</div>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label><i class="fa-solid fa-user-tie"></i> Client Name</label>
+                        <input type="text" id="invClientName" placeholder="Customer name">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label><i class="fa-solid fa-map-pin"></i> Address</label>
+                        <input type="text" id="invClientAddress" placeholder="Client address">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-city"></i> City / State</label>
+                        <input type="text" id="invClientCityState" placeholder="City, State">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-envelope"></i> Email</label>
+                        <input type="email" id="invClientEmail" placeholder="client@email.com">
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="fa-solid fa-list-check"></i> Line Items</div>
+                <div class="line-items-container">
+                    <div class="line-items-header">
+                        <span>Description</span><span>Qty</span><span>Rate (₹)</span><span>Disc %</span><span>Amount
+                            (₹)</span><span></span>
+                    </div>
+                    <div id="invLineItemsRows"></div>
+                    <button class="btn-add-row" id="invBtnAddRow"><i class="fa-solid fa-circle-plus"></i> Add Item</button>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0.8rem;">
+                    <label><i class="fa-solid fa-tag"></i> Overall Discount (₹)</label>
+                    <input type="number" id="invDiscountAmount" value="0.00" min="0" step="0.01">
+                </div>
+
+                <div class="totals-section">
+                    <div class="total-row"><span>Subtotal</span><span class="total-value"
+                            id="invSubtotalDisplay">₹0.00</span></div>
+                    <div class="total-row"><span>Overall Discount</span><span class="total-value"
+                            id="invDiscountDisplay">-₹0.00</span></div>
+                    <div class="total-row grand-total"><span><i class="fa-solid fa-star"></i> Grand Total</span><span
+                            class="total-value" id="invGrandTotalDisplay">₹0.00</span></div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="invBtnGenerate"><i class="fa-solid fa-wand-magic-sparkles"></i>
+                        Update Preview</button>
+                    <button class="btn btn-outline" id="invBtnPrint"><i class="fa-solid fa-file-pdf"></i> PDF &
+                    Print</button>
+                    <button class="btn btn-ghost" id="invBtnReset"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                </div>
+            </div>
+
+            <!-- Invoice Preview -->
+            <div class="invoice-preview-panel">
+                <div class="invoice-preview-header">
+                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                    <span style="color:#888; margin-left:0.5rem;">Invoice Preview</span>
+                </div>
+                <div class="invoice-preview-scroll" id="invPreviewScroll">
+                    <div class="invoice-doc" id="invInvoiceDoc"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            // ========== PWA Setup ==========
-            // Generate manifest blob
-            const manifestData = {
-                name: "Tawakkal Cell World - Invoice & Warranty",
-                short_name: "Tawakkal Cell",
-                description: "Professional invoice and warranty generator",
-                start_url: ".",
-                display: "standalone",
-                background_color: "#06080c",
-                theme_color: "#f97316",
-                icons: [{
-                    src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>",
-                    sizes: "100x100",
-                    type: "image/svg+xml"
-                }]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-            const manifestUrl = URL.createObjectURL(manifestBlob);
-            document.getElementById('manifest-link').href = manifestUrl;
+        // ==================== TAB SWITCHING ====================
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.tab-panel');
+        let activeScanner = false;
 
-            // Register service worker
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js')
-                        .then(reg => console.log('Service Worker registered', reg.scope))
-                        .catch(err => console.error('Service Worker registration failed', err));
-                });
-            }
-
-            // ========== Tab switching ==========
-            const tabs = document.querySelectorAll('.tab-btn');
-            const sections = {
-                invoice: document.getElementById('invoiceSection'),
-                warranty: document.getElementById('warrantySection'),
-                validator: document.getElementById('validatorSection')
-            };
-            tabs.forEach(btn => btn.addEventListener('click', () => {
-                tabs.forEach(b => b.classList.remove('active'));
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                tabBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                Object.values(sections).forEach(s => s.style.display = 'none');
-                sections[btn.dataset.tab].style.display = 'block';
-                if (btn.dataset.tab !== 'validator' && window.html5QrCode) {
-                    window.html5QrCode.stop().catch(e => {});
+                panels.forEach(p => p.classList.remove('active'));
+                if (tab === 'generator') document.getElementById('generatorPanel').classList.add(
+                    'active');
+                else if (tab === 'scanner') document.getElementById('scannerPanel').classList.add(
+                    'active');
+                else if (tab === 'invoice') document.getElementById('invoicePanel').classList.add('active');
+
+                // Stop camera when leaving scanner tab
+                if (tab !== 'scanner' && activeScanner) {
+                    stopCamera();
                 }
-            }));
-
-            // ========== INVOICE ==========
-            const today = new Date();
-            const day = today.getDate();
-            const month = today.getMonth() + 1;
-            const year = today.getFullYear();
-            const invNumberStr = `INV-${day}.${month}.${year}`;
-            document.getElementById('invNumber').value = invNumberStr;
-
-            const invDate = document.getElementById('invDate');
-            invDate.value = today.toISOString().slice(0,10);
-
-            function updateInvoiceTotal() {
-                let total = 0;
-                document.querySelectorAll('#itemsTable .item-row').forEach(row => {
-                    const qty = parseFloat(row.querySelector('.qty').value) || 0;
-                    const rate = parseFloat(row.querySelector('.rate').value) || 0;
-                    const rowTotal = qty * rate;
-                    row.querySelector('.row-total').textContent = '₹' + rowTotal.toFixed(2);
-                    total += rowTotal;
-                });
-                document.getElementById('grandTotal').textContent = '₹' + total.toFixed(2);
-            }
-
-            function bindRowEvents(row) {
-                row.querySelector('.qty').addEventListener('input', updateInvoiceTotal);
-                row.querySelector('.rate').addEventListener('input', updateInvoiceTotal);
-                row.querySelector('.remove-row').addEventListener('click', () => {
-                    if (document.querySelectorAll('#itemsTable .item-row').length > 1) {
-                        row.remove();
-                        updateInvoiceTotal();
-                    }
-                });
-            }
-            document.querySelectorAll('#itemsTable .item-row').forEach(row => bindRowEvents(row));
-            document.getElementById('addItemBtn').addEventListener('click', () => {
-                const tr = document.createElement('tr');
-                tr.className = 'item-row';
-                tr.innerHTML = `
-                    <td><input type="text" class="desc" placeholder=""></td>
-                    <td><input type="number" class="qty" value="1" min="1"></td>
-                    <td><input type="number" class="rate" value="0" step="0.01"></td>
-                    <td><span class="row-total">₹0.00</span></td>
-                    <td><i class="fa-solid fa-trash remove-row" style="color:var(--text-muted);cursor:pointer;"></i></td>
-                `;
-                document.querySelector('#itemsTable tbody').appendChild(tr);
-                bindRowEvents(tr);
-                updateInvoiceTotal();
             });
-            updateInvoiceTotal();
+        });
 
-            function fillInvoicePreview() {
-                document.getElementById('prevShopName').textContent = document.getElementById('shopName').value;
-                document.getElementById('prevShopAddress').textContent = document.getElementById('shopAddress').value;
-                document.getElementById('prevShopContact').textContent = `${document.getElementById('shopEmail').value} | ${document.getElementById('shopPhone').value}`;
-                document.getElementById('prevInvNumber').textContent = document.getElementById('invNumber').value;
-                document.getElementById('prevDate').textContent = invDate.value;
-                document.getElementById('prevClientName').textContent = document.getElementById('clientName').value || 'Client Name';
-                document.getElementById('prevClientPhone').textContent = document.getElementById('clientPhone').value ? `📞 ${document.getElementById('clientPhone').value}` : '';
+        // ==================== WARRANTY GENERATOR ====================
+        const genBtn = document.getElementById('btnGenerateCert');
+        const printBtn = document.getElementById('btnPrintCert');
+        const previewContainer = document.getElementById('certPreviewContainer');
+        let currentCertificateHTML = '';
 
-                const prevBody = document.querySelector('#prevItemsTable tbody');
-                prevBody.innerHTML = '';
-                document.querySelectorAll('#itemsTable .item-row').forEach(row => {
-                    const desc = row.querySelector('.desc').value;
-                    const qty = row.querySelector('.qty').value;
-                    const rate = row.querySelector('.rate').value;
-                    const amount = row.querySelector('.row-total').textContent;
-                    prevBody.innerHTML += `<tr><td>${desc}</td><td>${qty}</td><td>₹${parseFloat(rate).toFixed(2)}</td><td>${amount}</td></tr>`;
-                });
-                document.getElementById('prevTotal').textContent = document.getElementById('grandTotal').textContent;
+        function generateCertificate() {
+            const custName = document.getElementById('custName').value.trim() || 'Customer';
+            const phone = document.getElementById('custPhone').value.trim() || 'N/A';
+            const email = document.getElementById('custEmail').value.trim() || 'N/A';
+            const product = document.getElementById('product').value.trim() || 'Product';
+            const serial = document.getElementById('serial').value.trim() || 'N/A';
+            const purchaseDate = document.getElementById('purchaseDate').value;
+            const durationMonths = parseInt(document.getElementById('duration').value) || 12;
+            const details = document.getElementById('warrantyDetails').value.trim() || 'Standard warranty';
+            const pass = document.getElementById('encryptKey').value.trim() || 'TawakkalCellWarranty!';
+
+            if (!purchaseDate) {
+                alert('Please select a purchase date.');
+                return;
             }
 
-            async function downloadPDF() {
-                fillInvoicePreview();
-                const preview = document.getElementById('invoicePreview');
-                preview.style.display = 'block';
-                const canvas = await html2canvas(preview, { scale: 2, backgroundColor: '#ffffff' });
-                preview.style.display = 'none';
-                const imgData = canvas.toDataURL('image/png');
+            const purchase = new Date(purchaseDate + 'T00:00:00');
+            const expiry = new Date(purchase);
+            expiry.setMonth(expiry.getMonth() + durationMonths);
+            const expiryStr = expiry.toISOString().split('T')[0];
+
+            const warrantyData = { custName, phone, email, product, serial, purchaseDate, durationMonths, details,
+                expiry: expiryStr };
+            const encrypted = CryptoJS.AES.encrypt(JSON.stringify(warrantyData), pass).toString();
+
+            const certHTML = `
+                <div class="cert-preview" id="certPrintable">
+                    <div class="cert-inner">
+                        <div style="display:flex;align-items:center;gap:1.5rem;border-bottom:3px solid #ff6a1f;padding-bottom:1rem;margin-bottom:1.5rem;">
+                            <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#ff6a1f,#ff8c42);display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:800;">TCW</div>
+                            <div>
+                                <h2 style="font-weight:800;font-size:2rem;color:#1a1a1a;margin:0;">WARRANTY CERTIFICATE</h2>
+                                <p style="color:#ff6a1f;font-weight:600;margin:0;">Tawakkal Cell World – Kushmanchi, Telangana</p>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex:1;gap:2rem;">
+                            <div style="flex:1;display:flex;flex-direction:column;gap:0.8rem;font-size:0.9rem;">
+                                <div><span style="font-weight:700;color:#ff6a1f;">Customer:</span> ${custName}</div>
+                                <div><span style="font-weight:700;color:#ff6a1f;">Phone / Email:</span> ${phone} | ${email}</div>
+                                <div><span style="font-weight:700;color:#ff6a1f;">Product:</span> ${product}</div>
+                                <div><span style="font-weight:700;color:#ff6a1f;">Serial / IMEI:</span> ${serial}</div>
+                                <div><span style="font-weight:700;color:#ff6a1f;">Purchase Date:</span> ${purchaseDate}</div>
+                                <div><span style="font-weight:700;color:#ff6a1f;">Warranty Duration:</span> ${durationMonths} months</div>
+                                <div><span style="font-weight:700;color:#ff6a1f;">Expiry Date:</span> ${expiryStr}</div>
+                                <div><span style="font-weight:700;color:#ff6a1f;">Coverage:</span> ${details}</div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                                <div id="qrContainer" style="border:4px solid #ff6a1f;border-radius:12px;padding:5px;background:white;"></div>
+                                <span style="font-size:0.7rem;color:#888;margin-top:0.5rem;">Scan to verify</span>
+                            </div>
+                        </div>
+                        <div style="margin-top:auto;text-align:center;font-size:0.7rem;color:#777;border-top:1px solid #eee;padding-top:1rem;">
+                            <i class="fa-solid fa-shield-haltered"></i> Verified by Tawakkal Cell World | 7287897867 | iamabdulmajid786@gmail.com
+                        </div>
+                    </div>
+                </div>`;
+            currentCertificateHTML = certHTML;
+            previewContainer.innerHTML = certHTML;
+            setTimeout(() => {
+                const qrContainer = document.getElementById('qrContainer');
+                if (qrContainer) {
+                    qrContainer.innerHTML = '';
+                    new QRCode(qrContainer, { text: encrypted, width: 260, height: 260, colorDark: "#ff6a1f",
+                        colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+                }
+            }, 150);
+        }
+
+        genBtn.addEventListener('click', generateCertificate);
+
+        printBtn.addEventListener('click', async () => {
+            const certElement = document.getElementById('certPrintable');
+            if (!certElement) { alert('Please generate a certificate first.'); return; }
+            const clone = certElement.cloneNode(true);
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            clone.style.transform = 'none';
+            clone.style.width = '297mm';
+            clone.style.height = '210mm';
+            clone.style.margin = '0';
+            clone.style.boxShadow = 'none';
+            document.body.appendChild(clone);
+            try {
+                const canvas = await html2canvas(clone, { scale: 2, useCORS: true, allowTaint: true,
+                    backgroundColor: '#ffffff' });
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgWidth = 210;
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                pdf.save(`Invoice-${document.getElementById('invNumber').value}.pdf`);
-            }
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
+                pdf.autoPrint();
+                window.open(pdf.output('bloburl'), '_blank');
+            } catch (e) { alert('PDF generation failed.'); } finally { document.body.removeChild(clone); }
+        });
 
-            document.getElementById('generatePDFBtn').addEventListener('click', downloadPDF);
-            document.getElementById('printInvoiceBtn').addEventListener('click', () => {
-                fillInvoicePreview();
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write('<html><head><title>Invoice</title><style>body{font-family:Inter,sans-serif;margin:0;}</style></head><body>');
-                printWindow.document.write(document.getElementById('invoicePreview').outerHTML);
-                printWindow.document.write('</body></html>');
-                printWindow.document.close();
-                printWindow.print();
-            });
+        document.getElementById('purchaseDate').value = new Date().toISOString().split('T')[0];
 
-            // ========== WARRANTY GENERATOR ==========
-            const wPurchaseDate = document.getElementById('wPurchaseDate');
-            wPurchaseDate.value = today.toISOString().slice(0,10);
-            const SECRET_KEY = 'TwcWarrantySecret2025!';
+        // ==================== QR SCANNER ====================
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('startCamera');
+        const stopBtn = document.getElementById('stopCamera');
+        const scannerPass = document.getElementById('scannerPassphrase');
+        const noScanData = document.getElementById('noScanData');
+        const scanResult = document.getElementById('scanResult');
+        const warrantyDetailsCard = document.getElementById('warrantyDetailsCard');
+        const validityStatus = document.getElementById('validityStatus');
+        let stream = null;
+        let scanning = false;
+        const scanCanvas = document.createElement('canvas');
+        const scanCtx = scanCanvas.getContext('2d');
 
-            function generateWarrantyQR() {
-                const customer = document.getElementById('wCustomer').value || 'N/A';
-                const device = document.getElementById('wDevice').value || 'N/A';
-                const serial = document.getElementById('wSerial').value || 'N/A';
-                const purchase = wPurchaseDate.value;
-                const duration = parseInt(document.getElementById('wDuration').value) || 12;
-                const notes = document.getElementById('wNotes').value || '';
-                const expiryDate = new Date(purchase);
-                expiryDate.setMonth(expiryDate.getMonth() + duration);
-                const expiryStr = expiryDate.toISOString().slice(0,10);
-
-                const payload = { customer, device, serial, purchase, expiry: expiryStr, notes, t: Date.now() };
-                const payloadStr = JSON.stringify(payload);
-                const signature = CryptoJS.HmacSHA256(payloadStr, SECRET_KEY).toString();
-                const qrContent = btoa(encodeURIComponent(JSON.stringify({ data: payload, sig: signature })));
-
-                const qrCanvas = document.getElementById('qrCanvas');
-                QRCode.toCanvas(qrCanvas, qrContent, { width: 220, margin: 1 }, (err) => {
-                    if (err) console.error(err);
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 640 } }
                 });
-
-                document.getElementById('wOutCustomer').textContent = customer;
-                document.getElementById('wOutDevice').textContent = device;
-                document.getElementById('wOutSerial').textContent = serial;
-                document.getElementById('wOutExpiry').textContent = expiryStr;
-                document.getElementById('warrantyOutput').style.display = 'block';
-                window._warrantyQRData = qrContent;
+                video.srcObject = stream;
+                await video.play();
+                scanning = true;
+                activeScanner = true;
+                startBtn.disabled = true;
+                requestAnimationFrame(scanFrame);
+            } catch (err) {
+                alert('Camera error: ' + err.message);
             }
+        }
 
-            document.getElementById('generateWarrantyBtn').addEventListener('click', generateWarrantyQR);
-
-            document.getElementById('downloadWarrantyBtn').addEventListener('click', () => {
-                const canvas = document.getElementById('qrCanvas');
-                if (!canvas) return;
-                const link = document.createElement('a');
-                link.download = 'warranty-card.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            });
-
-            // ========== WARRANTY VALIDATOR ==========
-            let html5QrCode;
-            function startScanner() {
-                const reader = document.getElementById('reader');
-                reader.innerHTML = '';
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 250 } },
-                    (decodedText) => {
-                        validateQRContent(decodedText);
-                        html5QrCode.stop().then(() => { reader.innerHTML = ''; });
-                    },
-                    (errorMessage) => { /* ignore */ }
-                ).catch(err => alert('Camera error: ' + err));
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
+            video.srcObject = null;
+            scanning = false;
+            activeScanner = false;
+            startBtn.disabled = false;
+        }
 
-            function validateQRContent(qrText) {
-                try {
-                    const decoded = JSON.parse(decodeURIComponent(atob(qrText)));
-                    if (!decoded.data || !decoded.sig) throw new Error('Invalid format');
-                    const dataStr = JSON.stringify(decoded.data);
-                    const expectedSig = CryptoJS.HmacSHA256(dataStr, SECRET_KEY).toString();
-                    if (expectedSig !== decoded.sig) {
-                        showValidationResult(false, '❌ QR has been tampered with! Signature mismatch.');
-                        return;
+        function scanFrame() {
+            if (!scanning) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                scanCanvas.width = video.videoWidth;
+                scanCanvas.height = video.videoHeight;
+                scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+                const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                if (code) {
+                    const encryptedText = code.data;
+                    try {
+                        const pass = scannerPass.value.trim() || 'TawakkalCellWarranty!';
+                        const bytes = CryptoJS.AES.decrypt(encryptedText, pass);
+                        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+                        if (!decrypted) throw new Error('Decryption failed');
+                        const data = JSON.parse(decrypted);
+                        displayWarranty(data);
+                        stopCamera();
+                    } catch (e) {
+                        alert('Decryption error. Wrong key or invalid QR code.');
+                        stopCamera();
                     }
-                    const { customer, device, serial, expiry, purchase, notes } = decoded.data;
-                    const now = new Date();
-                    const expiryDate = new Date(expiry);
-                    const isValid = now <= expiryDate;
-                    const status = isValid ? '✅ Valid' : '⏰ Expired';
-                    const color = isValid ? '#2e7d32' : '#c62828';
-                    document.getElementById('validationResult').innerHTML = `
-                        <div style="background:${isValid?'#e8f5e9':'#ffebee'}; border-radius:16px; padding:20px; color:#111;">
-                            <h3 style="color:${color};">Warranty ${status}</h3>
-                            <p><strong>Customer:</strong> ${customer}</p>
-                            <p><strong>Device:</strong> ${device}</p>
-                            <p><strong>Serial:</strong> ${serial || '-'}</p>
-                            <p><strong>Purchase:</strong> ${purchase}</p>
-                            <p><strong>Expiry:</strong> ${expiry}</p>
-                            <p><strong>Notes:</strong> ${notes || '-'}</p>
-                        </div>`;
-                    document.getElementById('validationResult').style.display = 'block';
-                } catch (e) {
-                    showValidationResult(false, '❌ Invalid QR code content.');
+                }
+            }
+            requestAnimationFrame(scanFrame);
+        }
+
+        function displayWarranty(data) {
+            noScanData.classList.add('hidden');
+            scanResult.classList.remove('hidden');
+            const now = new Date();
+            const expiry = new Date(data.expiry + 'T00:00:00');
+            const isValid = now <= expiry;
+            warrantyDetailsCard.innerHTML = `
+                <div class="detail-row"><span class="detail-label">Customer</span><span>${data.custName}</span></div>
+                <div class="detail-row"><span class="detail-label">Phone</span><span>${data.phone}</span></div>
+                <div class="detail-row"><span class="detail-label">Email</span><span>${data.email}</span></div>
+                <div class="detail-row"><span class="detail-label">Product</span><span>${data.product}</span></div>
+                <div class="detail-row"><span class="detail-label">Serial</span><span>${data.serial}</span></div>
+                <div class="detail-row"><span class="detail-label">Purchase</span><span>${data.purchaseDate}</span></div>
+                <div class="detail-row"><span class="detail-label">Duration</span><span>${data.durationMonths} months</span></div>
+                <div class="detail-row"><span class="detail-label">Expiry</span><span>${data.expiry}</span></div>
+                <div class="detail-row"><span class="detail-label">Coverage</span><span>${data.details}</span></div>`;
+            validityStatus.innerHTML = isValid ?
+                '<span class="valid-badge"><i class="fa-solid fa-circle-check"></i> WARRANTY VALID</span>' :
+                '<span class="expired-badge"><i class="fa-solid fa-circle-exclamation"></i> WARRANTY EXPIRED</span>';
+        }
+
+        startBtn.addEventListener('click', startCamera);
+        stopBtn.addEventListener('click', stopCamera);
+
+        // ==================== INVOICE GENERATOR ====================
+        (function() {
+            const $ = (id) => document.getElementById(id);
+            const companyName = $('invCompanyName'),
+                companyAddress = $('invCompanyAddress'),
+                companyCityState = $('invCompanyCityState'),
+                companyContact = $('invCompanyContact');
+            const invoiceNumber = $('invInvoiceNumber'),
+                issueDate = $('invIssueDate');
+            const clientName = $('invClientName'),
+                clientAddress = $('invClientAddress'),
+                clientCityState = $('invClientCityState'),
+                clientEmail = $('invClientEmail');
+            const discountAmount = $('invDiscountAmount');
+            const lineItemsRows = $('invLineItemsRows'),
+                btnAddRow = $('invBtnAddRow'),
+                btnGenerate = $('invBtnGenerate'),
+                btnPrint = $('invBtnPrint'),
+                btnReset = $('invBtnReset');
+            const invoiceDoc = $('invInvoiceDoc'),
+                previewScroll = $('invPreviewScroll');
+            const subtotalDisplay = $('invSubtotalDisplay'),
+                discountDisplayEl = $('invDiscountDisplay'),
+                grandTotalDisplay = $('invGrandTotalDisplay');
+
+            let lineItems = [
+                { id: 1, description: 'Smartphone Repair', quantity: 1, rate: 800.00, discount: 0 },
+                { id: 2, description: 'Screen Protector Installation', quantity: 2, rate: 150.00, discount: 5 },
+                { id: 3, description: 'USB Cable', quantity: 3, rate: 99.00, discount: 0 },
+            ];
+            let nextId = 4;
+
+            function getTodayStr() {
+                const d = new Date();
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            }
+
+            function initDates() {
+                const today = getTodayStr();
+                issueDate.value = today;
+                invoiceNumber.value = `INV-${today}`;
+            }
+
+            function renderLineItems() {
+                lineItemsRows.innerHTML = '';
+                lineItems.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'line-item-row';
+                    row.setAttribute('data-id', item.id);
+                    row.innerHTML = `
+                        <input type="text" class="desc-input" value="${escapeAttr(item.description)}" data-id="${item.id}" data-field="description" placeholder="Item description">
+                        <div class="stepper-group qty-stepper" data-label="Qty">
+                            <button class="stepper-btn dec" data-id="${item.id}" data-field="quantity"><i class="fa-solid fa-minus"></i></button>
+                            <input type="number" class="quantity-input" value="${item.quantity}" min="0" step="1" data-id="${item.id}" data-field="quantity">
+                            <button class="stepper-btn inc" data-id="${item.id}" data-field="quantity"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <div class="stepper-group rate-stepper" data-label="Rate ₹">
+                            <button class="stepper-btn dec" data-id="${item.id}" data-field="rate"><i class="fa-solid fa-minus"></i></button>
+                            <input type="number" class="rate-input" value="${item.rate.toFixed(2)}" min="0" step="0.01" data-id="${item.id}" data-field="rate">
+                            <button class="stepper-btn inc" data-id="${item.id}" data-field="rate"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <div class="stepper-group disc-stepper" data-label="Disc %">
+                            <button class="stepper-btn dec" data-id="${item.id}" data-field="discount"><i class="fa-solid fa-minus"></i></button>
+                            <input type="number" class="disc-input" value="${item.discount}" min="0" max="100" step="0.01" data-id="${item.id}" data-field="discount">
+                            <button class="stepper-btn inc" data-id="${item.id}" data-field="discount"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <input type="text" class="amount-input" value="${(item.quantity * item.rate * (1 - item.discount/100)).toFixed(2)}" readonly>
+                        <button class="btn-remove-row" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>`;
+                    lineItemsRows.appendChild(row);
+                });
+                attachRowListeners();
+                updateTotals();
+            }
+
+            function attachRowListeners() {
+                lineItemsRows.querySelectorAll('.desc-input, .quantity-input, .rate-input, .disc-input').forEach(
+                    input => {
+                        input.addEventListener('input', function() {
+                            const id = parseInt(this.dataset.id),
+                                field = this.dataset.field;
+                            const item = lineItems.find(li => li.id === id);
+                            if (!item) return;
+                            if (field === 'description') item.description = this.value;
+                            else { const num = parseFloat(this.value);
+                                item[field] = isNaN(num) ? 0 : num; }
+                            if (field === 'quantity') item.quantity = Math.max(0, Math.round(item
+                                .quantity));
+                            if (field === 'discount') item.discount = Math.min(100, Math.max(0, item
+                                .discount));
+                            if (field === 'rate') item.rate = Math.max(0, item.rate);
+                            this.value = field === 'quantity' ? item.quantity : item[field].toFixed(2);
+                            updateRowAmount(id);
+                            updateTotals();
+                            autoGenerate();
+                        });
+                    });
+                lineItemsRows.querySelectorAll('.stepper-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const id = parseInt(this.dataset.id),
+                            field = this.dataset.field;
+                        const item = lineItems.find(li => li.id === id);
+                        if (!item) return;
+                        const input = this.closest('.line-item-row').querySelector(
+                            `input[data-field="${field}"]`);
+                        const step = parseFloat(input.step) || 1;
+                        let cur = parseFloat(input.value) || 0;
+                        let newVal = this.classList.contains('inc') ? cur + step : cur - step;
+                        if (field === 'quantity') newVal = Math.max(0, Math.round(newVal));
+                        else if (field === 'discount') newVal = Math.min(100, Math.max(0, newVal));
+                        else newVal = Math.max(0, newVal);
+                        input.value = field === 'quantity' ? newVal : newVal.toFixed(2);
+                        item[field] = newVal;
+                        updateRowAmount(id);
+                        updateTotals();
+                        autoGenerate();
+                    });
+                });
+                lineItemsRows.querySelectorAll('.btn-remove-row').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.dataset.id);
+                        if (lineItems.length <= 1) { alert(
+                                'At least one line item is required.'); return; }
+                        lineItems = lineItems.filter(li => li.id !== id);
+                        renderLineItems();
+                        autoGenerate();
+                    });
+                });
+            }
+
+            function updateRowAmount(id) {
+                const item = lineItems.find(li => li.id === id);
+                if (!item) return;
+                const amt = item.quantity * item.rate * (1 - item.discount / 100);
+                const row = document.querySelector(`.line-item-row[data-id="${id}"]`);
+                if (row) { row.querySelector('.amount-input').value = amt.toFixed(2); }
+            }
+
+            function updateTotals() {
+                const subtotal = lineItems.reduce((s, i) => s + (i.quantity * i.rate * (1 - i.discount / 100)), 0);
+                const disc = parseFloat(discountAmount.value) || 0;
+                const grand = Math.max(0, subtotal - disc);
+                subtotalDisplay.textContent = '₹' + subtotal.toFixed(2);
+                discountDisplayEl.textContent = '-₹' + disc.toFixed(2);
+                grandTotalDisplay.textContent = '₹' + grand.toFixed(2);
+            }
+
+            function addLineItem() {
+                lineItems.push({ id: nextId++, description: '', quantity: 1, rate: 0, discount: 0 });
+                renderLineItems();
+                autoGenerate();
+            }
+
+            function escapeAttr(s) { return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;'); }
+
+            function escapeHTML(s) { const d = document.createElement('div');
+                d.textContent = s; return d.innerHTML; }
+
+            function generateInvoice() {
+                const compName = companyName.value.trim() || 'Tawakkal Cell World',
+                    compAddr = companyAddress.value.trim(),
+                    compCSZ = companyCityState.value.trim(),
+                    compContact = companyContact.value.trim();
+                const invNum = invoiceNumber.value.trim(),
+                    issDate = issueDate.value;
+                const cliName = clientName.value.trim() || 'Client',
+                    cliAddr = clientAddress.value.trim(),
+                    cliCSZ = clientCityState.value.trim(),
+                    cliEmail = clientEmail.value.trim();
+                const subtotal = lineItems.reduce((s, i) => s + (i.quantity * i.rate * (1 - i.discount / 100)), 0);
+                const overallDiscount = parseFloat(discountAmount.value) || 0,
+                    grandTotal = Math.max(0, subtotal - overallDiscount);
+                const formatDate = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric',
+                    month: 'long', day: 'numeric' }) : '—';
+                const itemsHTML = lineItems.map(item => `
+                    <tr>
+                        <td>${escapeHTML(item.description) || '—'}</td>
+                        <td>${item.quantity}</td>
+                        <td>₹${item.rate.toFixed(2)}</td>
+                        <td>${item.discount.toFixed(2)}%</td>
+                        <td>₹${(item.quantity * item.rate * (1 - item.discount/100)).toFixed(2)}</td>
+                    </tr>`).join('');
+                invoiceDoc.innerHTML = `
+                    <div class="inv-header">
+                        <div class="circular-logo">TCW</div>
+                        <div class="company-info">
+                            <h2>${escapeHTML(compName)}</h2>
+                            <div class="tagline"><i class="fa-solid fa-mobile-screen-button"></i> Your friendly neighborhood phone shop</div>
+                            ${compAddr ? `<p>${escapeHTML(compAddr)}</p>` : ''}
+                            ${compCSZ ? `<p>${escapeHTML(compCSZ)}</p>` : ''}
+                            ${compContact ? `<p>${escapeHTML(compContact)}</p>` : ''}
+                        </div>
+                        <div class="invoice-badge">
+                            <span class="badge-label">INVOICE</span>
+                            <p class="inv-number"># ${escapeHTML(invNum)}</p>
+                        </div>
+                    </div>
+                    <div class="meta-row">
+                        <div><strong><i class="fa-solid fa-calendar"></i> Issue Date</strong><br>${formatDate(issDate)}</div>
+                    </div>
+                    <div class="bill-to-box">
+                        <strong><i class="fa-solid fa-user"></i> Bill To</strong>
+                        <p>${escapeHTML(cliName)}</p>
+                        ${cliAddr ? `<p style="font-weight:400;color:#555;">${escapeHTML(cliAddr)}</p>` : ''}
+                        ${cliCSZ ? `<p style="font-weight:400;color:#555;">${escapeHTML(cliCSZ)}</p>` : ''}
+                        ${cliEmail ? `<p style="font-weight:400;color:#777;">${escapeHTML(cliEmail)}</p>` : ''}
+                    </div>
+                    <table>
+                        <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Disc %</th><th>Amount</th></tr></thead>
+                        <tbody>${itemsHTML || '<tr><td colspan="5" style="text-align:center;color:#aaa;">No items</td></tr>'}</tbody>
+                    </table>
+                    <div class="inv-totals">
+                        <div class="inv-total-line"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
+                        ${overallDiscount > 0 ? `<div class="inv-total-line"><span>Overall Discount</span><span>-₹${overallDiscount.toFixed(2)}</span></div>` : ''}
+                        <div class="inv-total-line grand"><span><i class="fa-solid fa-star"></i> Grand Total</span><span>₹${grandTotal.toFixed(2)}</span></div>
+                    </div>
+                    <div class="inv-footer">
+                        <p><i class="fa-solid fa-bolt"></i> Thank you for choosing Tawakkal Cell World! <i class="fa-solid fa-bolt"></i></p>
+                        <p><i class="fa-solid fa-phone"></i> 7287897867 &nbsp; | &nbsp; <i class="fa-solid fa-envelope"></i> iamabdulmajid786@gmail.com</p>
+                        <p style="font-size:0.7rem;">Payment is due upon receipt.</p>
+                    </div>`;
+            }
+
+            function autoGenerate() {
+                if (!invoiceDoc.querySelector('.empty-preview') || invoiceDoc.querySelector('.inv-header')) {
+                    generateInvoice();
                 }
             }
 
-            function showValidationResult(success, message) {
-                document.getElementById('validationResult').style.display = 'block';
-                document.getElementById('validationResult').innerHTML = `
-                    <div style="background:${success?'#e8f5e9':'#ffebee'}; border-radius:16px; padding:20px; color:#111;">${message}</div>`;
+            async function generatePDF() {
+                generateInvoice();
+                if (!previewScroll || invoiceDoc.innerHTML.trim() === '') { alert('Add invoice data first.'); return; }
+                const originalText = btnPrint.innerHTML;
+                btnPrint.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+                btnPrint.disabled = true;
+                try {
+                    const clone = previewScroll.cloneNode(true);
+                    clone.style.position = 'fixed';
+                    clone.style.top = '0';
+                    clone.style.left = '-9999px';
+                    clone.style.width = previewScroll.offsetWidth + 'px';
+                    clone.style.height = 'auto';
+                    clone.style.maxHeight = 'none';
+                    clone.style.overflow = 'visible';
+                    clone.style.background = '#ffffff';
+                    document.body.appendChild(clone);
+                    const canvas = await html2canvas(clone, { scale: 3, backgroundColor: '#ffffff', logging: false,
+                        allowTaint: true, useCORS: true });
+                    document.body.removeChild(clone);
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    const pdfWidth = pdf.internal.pageSize.getWidth(),
+                        pdfHeight = pdf.internal.pageSize.getHeight();
+                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                    let heightLeft = imgHeight,
+                        position = 0;
+                    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, pdfWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, pdfWidth, imgHeight);
+                        heightLeft -= pdfHeight;
+                    }
+                    window.open(pdf.output('bloburl'), '_blank');
+                } catch (e) { alert('PDF generation failed.'); } finally {
+                    btnPrint.innerHTML = originalText;
+                    btnPrint.disabled = false;
+                }
             }
 
-            document.getElementById('scanQRBtn').addEventListener('click', startScanner);
-            document.getElementById('validateManualBtn').addEventListener('click', () => {
-                const manualInput = document.getElementById('manualQRInput').value.trim();
-                if (!manualInput) return alert('Please enter QR content.');
-                validateQRContent(manualInput);
+            btnAddRow.addEventListener('click', addLineItem);
+            btnGenerate.addEventListener('click', generateInvoice);
+            btnPrint.addEventListener('click', generatePDF);
+            btnReset.addEventListener('click', () => {
+                companyName.value = 'Tawakkal Cell World';
+                companyAddress.value = 'Kushmanchi';
+                companyCityState.value = 'Telangana, India';
+                companyContact.value = '7287897867 | iamabdulmajid786@gmail.com';
+                initDates();
+                clientName.value = '';
+                clientAddress.value = '';
+                clientCityState.value = '';
+                clientEmail.value = '';
+                discountAmount.value = '0.00';
+                lineItems = [
+                    { id: nextId++, description: 'Smartphone Repair', quantity: 1, rate: 800.00, discount: 0 },
+                    { id: nextId++, description: 'Screen Protector Installation', quantity: 2, rate: 150.00,
+                        discount: 5 },
+                    { id: nextId++, description: 'USB Cable', quantity: 3, rate: 99.00, discount: 0 },
+                ];
+                renderLineItems();
+                updateTotals();
+                invoiceDoc.innerHTML = '';
             });
-
-            // GSAP animations
-            gsap.from('.sidebar', { x: -30, opacity:0, duration:0.5 });
-            gsap.from('.topbar', { y: -20, opacity:0, duration:0.4 });
-            gsap.from('.tool-card', { opacity:0, y:30, duration:0.6, delay:0.2 });
+            discountAmount.addEventListener('input', () => { updateTotals();
+                autoGenerate(); });
+            ['invCompanyName', 'invCompanyAddress', 'invCompanyCityState', 'invCompanyContact', 'invClientName',
+                'invClientAddress', 'invClientCityState', 'invClientEmail'
+            ].forEach(id => document.getElementById(id).addEventListener('input', () => {
+                clearTimeout(window._autoGenInv);
+                window._autoGenInv = setTimeout(autoGenerate, 400);
+            }));
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e
+                    .preventDefault();
+                    generateInvoice(); } });
+            initDates();
+            renderLineItems();
+            updateTotals();
+            setTimeout(generateInvoice, 150);
         })();
     </script>
 </body>
