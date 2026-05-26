@@ -6,14 +6,12 @@
     <title>Tawakkal Cell World – Warranty, Scanner & Invoice</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Crypto & QR libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js">
     </script>
-    <!-- html2canvas + jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
@@ -33,8 +31,6 @@
             --transition: 0.25s ease;
             --font-body: 'Inter', system-ui, -apple-system, sans-serif;
             --font-display: 'Nunito', sans-serif;
-            --stepper-btn-size: 34px;
-            --stepper-btn-size-mobile: 40px;
         }
 
         * {
@@ -232,6 +228,14 @@
         }
         input[type="date"] {
             color-scheme: dark;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .btn-row {
@@ -512,49 +516,12 @@
             border-color: var(--neon-orange);
             box-shadow: 0 0 10px rgba(255, 106, 31, 0.2);
         }
-        .stepper-group {
-            display: flex;
-            align-items: center;
-            gap: 0.15rem;
+        .line-item-row input.num-input {
             width: 100%;
-            min-width: 0;
-        }
-        .stepper-btn {
-            width: var(--stepper-btn-size);
-            height: var(--stepper-btn-size);
-            min-width: var(--stepper-btn-size);
-            min-height: var(--stepper-btn-size);
-            border-radius: 50%;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--neon-orange);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.75rem;
-            flex-shrink: 0;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .stepper-btn:hover {
-            border-color: var(--neon-orange);
-            box-shadow: 0 0 8px rgba(255, 106, 31, 0.3);
-            background: #1c110a;
-        }
-        .stepper-btn:active {
-            background: #2a1508;
-            transform: scale(0.93);
-            transition: 0.08s ease;
-        }
-        .stepper-group input {
-            flex: 1;
-            min-width: 0;
             background: var(--bg-input);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
-            padding: 0.55rem 0.25rem;
+            padding: 0.55rem 0.4rem;
             color: #e8e8e8;
             font-size: 0.8rem;
             text-align: center;
@@ -562,17 +529,9 @@
             outline: none;
             transition: var(--transition);
         }
-        .stepper-group input:focus {
+        .line-item-row input.num-input:focus {
             border-color: var(--neon-orange);
             box-shadow: 0 0 10px rgba(255, 106, 31, 0.2);
-        }
-        .stepper-group input[type="number"] {
-            -moz-appearance: textfield;
-        }
-        .stepper-group input[type="number"]::-webkit-inner-spin-button,
-        .stepper-group input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
         }
         .amount-input {
             background: #1c110a !important;
@@ -592,10 +551,10 @@
             border: 1px solid transparent;
             color: var(--danger);
             cursor: pointer;
-            width: var(--stepper-btn-size);
-            height: var(--stepper-btn-size);
-            min-width: var(--stepper-btn-size);
-            min-height: var(--stepper-btn-size);
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            min-height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -906,13 +865,13 @@
                 padding: 0.6rem 0.5rem;
                 border-radius: 6px;
             }
-            .line-item-row .stepper-group:nth-of-type(1) {
+            .line-item-row .qty-input {
                 grid-column: 1;
             }
-            .line-item-row .stepper-group:nth-of-type(2) {
+            .line-item-row .rate-input {
                 grid-column: 2;
             }
-            .line-item-row .stepper-group:nth-of-type(3) {
+            .line-item-row .disc-input {
                 grid-column: 3;
             }
             .line-item-row .amount-input {
@@ -931,46 +890,15 @@
                 min-height: 36px;
                 margin-top: 0.2rem;
             }
-            .stepper-group {
-                flex-wrap: wrap;
-                gap: 2px;
-                justify-content: center;
-            }
-            .stepper-group::before {
-                content: attr(data-label);
-                width: 100%;
-                display: block;
-                font-size: 0.6rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                color: #999;
-                letter-spacing: 0.3px;
-                text-align: center;
-                margin-bottom: 1px;
-                order: -1;
-            }
-            .stepper-btn {
-                width: var(--stepper-btn-size-mobile);
-                height: var(--stepper-btn-size-mobile);
-                min-width: var(--stepper-btn-size-mobile);
-                min-height: var(--stepper-btn-size-mobile);
-                font-size: 0.8rem;
-            }
-            .stepper-group input {
+            .line-item-row input.num-input {
                 font-size: 0.78rem;
-                padding: 0.5rem 0.2rem;
+                padding: 0.55rem 0.3rem;
             }
             .btn-add-row {
                 width: 100%;
                 justify-content: center;
                 padding: 0.7rem;
                 font-size: 0.85rem;
-            }
-            .btn-remove-row {
-                width: 36px;
-                height: 36px;
-                min-width: 36px;
-                min-height: 36px;
             }
         }
     </style>
@@ -1007,7 +935,7 @@
                 <div class="form-group"><label><i class="fa-solid fa-calendar"></i> Purchase Date</label><input type="date"
                         id="purchaseDate"></div>
                 <div class="form-group"><label><i class="fa-solid fa-clock"></i> Warranty (months)</label><input
-                        type="number" id="duration" value="12" min="1"></div>
+                        type="number" id="duration" value="12" min="1" step="1"></div>
                 <div class="form-group" style="grid-column:1/-1;"><label><i class="fa-solid fa-pen-to-square"></i> Coverage
                         Details</label><textarea id="warrantyDetails" rows="2" placeholder="What is covered..."></textarea>
                 </div>
@@ -1130,16 +1058,16 @@
 
                 <div class="form-group" style="margin-bottom: 0.8rem;">
                     <label><i class="fa-solid fa-tag"></i> Overall Discount (₹)</label>
-                    <input type="number" id="invDiscountAmount" value="0.00" min="0" step="0.01">
+                    <input type="number" id="invDiscountAmount" value="0" min="0" step="1">
                 </div>
 
                 <div class="totals-section">
                     <div class="total-row"><span>Subtotal</span><span class="total-value"
-                            id="invSubtotalDisplay">₹0.00</span></div>
+                            id="invSubtotalDisplay">₹0</span></div>
                     <div class="total-row"><span>Overall Discount</span><span class="total-value"
-                            id="invDiscountDisplay">-₹0.00</span></div>
+                            id="invDiscountDisplay">-₹0</span></div>
                     <div class="total-row grand-total"><span><i class="fa-solid fa-star"></i> Grand Total</span><span
-                            class="total-value" id="invGrandTotalDisplay">₹0.00</span></div>
+                            class="total-value" id="invGrandTotalDisplay">₹0</span></div>
                 </div>
 
                 <div class="btn-row">
@@ -1182,7 +1110,6 @@
                     'active');
                 else if (tab === 'invoice') document.getElementById('invoicePanel').classList.add('active');
 
-                // Stop camera when leaving scanner tab
                 if (tab !== 'scanner' && activeScanner) {
                     stopCamera();
                 }
@@ -1382,7 +1309,7 @@
         startBtn.addEventListener('click', startCamera);
         stopBtn.addEventListener('click', stopCamera);
 
-        // ==================== INVOICE GENERATOR ====================
+        // ==================== INVOICE GENERATOR (NO STEPPERS, NO DECIMALS) ====================
         (function() {
             const $ = (id) => document.getElementById(id);
             const companyName = $('invCompanyName'),
@@ -1408,9 +1335,9 @@
                 grandTotalDisplay = $('invGrandTotalDisplay');
 
             let lineItems = [
-                { id: 1, description: 'Smartphone Repair', quantity: 1, rate: 800.00, discount: 0 },
-                { id: 2, description: 'Screen Protector Installation', quantity: 2, rate: 150.00, discount: 5 },
-                { id: 3, description: 'USB Cable', quantity: 3, rate: 99.00, discount: 0 },
+                { id: 1, description: 'Smartphone Repair', quantity: 1, rate: 800, discount: 0 },
+                { id: 2, description: 'Screen Protector Installation', quantity: 2, rate: 150, discount: 5 },
+                { id: 3, description: 'USB Cable', quantity: 3, rate: 99, discount: 0 },
             ];
             let nextId = 4;
 
@@ -1425,30 +1352,23 @@
                 invoiceNumber.value = `INV-${today}`;
             }
 
+            function calcItemAmount(item) {
+                return Math.round(item.quantity * item.rate * (1 - item.discount / 100));
+            }
+
             function renderLineItems() {
                 lineItemsRows.innerHTML = '';
                 lineItems.forEach(item => {
+                    const amt = calcItemAmount(item);
                     const row = document.createElement('div');
                     row.className = 'line-item-row';
                     row.setAttribute('data-id', item.id);
                     row.innerHTML = `
                         <input type="text" class="desc-input" value="${escapeAttr(item.description)}" data-id="${item.id}" data-field="description" placeholder="Item description">
-                        <div class="stepper-group qty-stepper" data-label="Qty">
-                            <button class="stepper-btn dec" data-id="${item.id}" data-field="quantity"><i class="fa-solid fa-minus"></i></button>
-                            <input type="number" class="quantity-input" value="${item.quantity}" min="0" step="1" data-id="${item.id}" data-field="quantity">
-                            <button class="stepper-btn inc" data-id="${item.id}" data-field="quantity"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <div class="stepper-group rate-stepper" data-label="Rate ₹">
-                            <button class="stepper-btn dec" data-id="${item.id}" data-field="rate"><i class="fa-solid fa-minus"></i></button>
-                            <input type="number" class="rate-input" value="${item.rate.toFixed(2)}" min="0" step="0.01" data-id="${item.id}" data-field="rate">
-                            <button class="stepper-btn inc" data-id="${item.id}" data-field="rate"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <div class="stepper-group disc-stepper" data-label="Disc %">
-                            <button class="stepper-btn dec" data-id="${item.id}" data-field="discount"><i class="fa-solid fa-minus"></i></button>
-                            <input type="number" class="disc-input" value="${item.discount}" min="0" max="100" step="0.01" data-id="${item.id}" data-field="discount">
-                            <button class="stepper-btn inc" data-id="${item.id}" data-field="discount"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <input type="text" class="amount-input" value="${(item.quantity * item.rate * (1 - item.discount/100)).toFixed(2)}" readonly>
+                        <input type="number" class="num-input qty-input" value="${item.quantity}" min="0" step="1" data-id="${item.id}" data-field="quantity" placeholder="Qty">
+                        <input type="number" class="num-input rate-input" value="${item.rate}" min="0" step="1" data-id="${item.id}" data-field="rate" placeholder="Rate ₹">
+                        <input type="number" class="num-input disc-input" value="${item.discount}" min="0" max="100" step="1" data-id="${item.id}" data-field="discount" placeholder="Disc %">
+                        <input type="text" class="amount-input" value="${amt}" readonly>
                         <button class="btn-remove-row" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>`;
                     lineItemsRows.appendChild(row);
                 });
@@ -1457,49 +1377,29 @@
             }
 
             function attachRowListeners() {
-                lineItemsRows.querySelectorAll('.desc-input, .quantity-input, .rate-input, .disc-input').forEach(
+                lineItemsRows.querySelectorAll('.desc-input, .qty-input, .rate-input, .disc-input').forEach(
                     input => {
                         input.addEventListener('input', function() {
                             const id = parseInt(this.dataset.id),
                                 field = this.dataset.field;
                             const item = lineItems.find(li => li.id === id);
                             if (!item) return;
-                            if (field === 'description') item.description = this.value;
-                            else { const num = parseFloat(this.value);
-                                item[field] = isNaN(num) ? 0 : num; }
-                            if (field === 'quantity') item.quantity = Math.max(0, Math.round(item
-                                .quantity));
-                            if (field === 'discount') item.discount = Math.min(100, Math.max(0, item
-                                .discount));
-                            if (field === 'rate') item.rate = Math.max(0, item.rate);
-                            this.value = field === 'quantity' ? item.quantity : item[field].toFixed(2);
+                            if (field === 'description') {
+                                item.description = this.value;
+                            } else {
+                                const raw = parseFloat(this.value);
+                                let val = isNaN(raw) ? 0 : Math.round(raw);
+                                if (field === 'quantity') val = Math.max(0, val);
+                                if (field === 'discount') val = Math.min(100, Math.max(0, val));
+                                if (field === 'rate') val = Math.max(0, val);
+                                item[field] = val;
+                                this.value = val;
+                            }
                             updateRowAmount(id);
                             updateTotals();
                             autoGenerate();
                         });
                     });
-                lineItemsRows.querySelectorAll('.stepper-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const id = parseInt(this.dataset.id),
-                            field = this.dataset.field;
-                        const item = lineItems.find(li => li.id === id);
-                        if (!item) return;
-                        const input = this.closest('.line-item-row').querySelector(
-                            `input[data-field="${field}"]`);
-                        const step = parseFloat(input.step) || 1;
-                        let cur = parseFloat(input.value) || 0;
-                        let newVal = this.classList.contains('inc') ? cur + step : cur - step;
-                        if (field === 'quantity') newVal = Math.max(0, Math.round(newVal));
-                        else if (field === 'discount') newVal = Math.min(100, Math.max(0, newVal));
-                        else newVal = Math.max(0, newVal);
-                        input.value = field === 'quantity' ? newVal : newVal.toFixed(2);
-                        item[field] = newVal;
-                        updateRowAmount(id);
-                        updateTotals();
-                        autoGenerate();
-                    });
-                });
                 lineItemsRows.querySelectorAll('.btn-remove-row').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const id = parseInt(this.dataset.id);
@@ -1515,18 +1415,18 @@
             function updateRowAmount(id) {
                 const item = lineItems.find(li => li.id === id);
                 if (!item) return;
-                const amt = item.quantity * item.rate * (1 - item.discount / 100);
+                const amt = calcItemAmount(item);
                 const row = document.querySelector(`.line-item-row[data-id="${id}"]`);
-                if (row) { row.querySelector('.amount-input').value = amt.toFixed(2); }
+                if (row) { row.querySelector('.amount-input').value = amt; }
             }
 
             function updateTotals() {
-                const subtotal = lineItems.reduce((s, i) => s + (i.quantity * i.rate * (1 - i.discount / 100)), 0);
-                const disc = parseFloat(discountAmount.value) || 0;
+                const subtotal = lineItems.reduce((s, i) => s + calcItemAmount(i), 0);
+                const disc = Math.round(parseFloat(discountAmount.value) || 0);
                 const grand = Math.max(0, subtotal - disc);
-                subtotalDisplay.textContent = '₹' + subtotal.toFixed(2);
-                discountDisplayEl.textContent = '-₹' + disc.toFixed(2);
-                grandTotalDisplay.textContent = '₹' + grand.toFixed(2);
+                subtotalDisplay.textContent = '₹' + subtotal;
+                discountDisplayEl.textContent = '-₹' + disc;
+                grandTotalDisplay.textContent = '₹' + grand;
             }
 
             function addLineItem() {
@@ -1551,19 +1451,22 @@
                     cliAddr = clientAddress.value.trim(),
                     cliCSZ = clientCityState.value.trim(),
                     cliEmail = clientEmail.value.trim();
-                const subtotal = lineItems.reduce((s, i) => s + (i.quantity * i.rate * (1 - i.discount / 100)), 0);
-                const overallDiscount = parseFloat(discountAmount.value) || 0,
-                    grandTotal = Math.max(0, subtotal - overallDiscount);
+                const subtotal = lineItems.reduce((s, i) => s + calcItemAmount(i), 0);
+                const overallDiscount = Math.round(parseFloat(discountAmount.value) || 0);
+                const grandTotal = Math.max(0, subtotal - overallDiscount);
                 const formatDate = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric',
                     month: 'long', day: 'numeric' }) : '—';
-                const itemsHTML = lineItems.map(item => `
+                const itemsHTML = lineItems.map(item => {
+                    const amt = calcItemAmount(item);
+                    return `
                     <tr>
                         <td>${escapeHTML(item.description) || '—'}</td>
                         <td>${item.quantity}</td>
-                        <td>₹${item.rate.toFixed(2)}</td>
-                        <td>${item.discount.toFixed(2)}%</td>
-                        <td>₹${(item.quantity * item.rate * (1 - item.discount/100)).toFixed(2)}</td>
-                    </tr>`).join('');
+                        <td>₹${item.rate}</td>
+                        <td>${item.discount}%</td>
+                        <td>₹${amt}</td>
+                    </tr>`;
+                }).join('');
                 invoiceDoc.innerHTML = `
                     <div class="inv-header">
                         <div class="circular-logo">TCW</div>
@@ -1594,9 +1497,9 @@
                         <tbody>${itemsHTML || '<tr><td colspan="5" style="text-align:center;color:#aaa;">No items</td></tr>'}</tbody>
                     </table>
                     <div class="inv-totals">
-                        <div class="inv-total-line"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
-                        ${overallDiscount > 0 ? `<div class="inv-total-line"><span>Overall Discount</span><span>-₹${overallDiscount.toFixed(2)}</span></div>` : ''}
-                        <div class="inv-total-line grand"><span><i class="fa-solid fa-star"></i> Grand Total</span><span>₹${grandTotal.toFixed(2)}</span></div>
+                        <div class="inv-total-line"><span>Subtotal</span><span>₹${subtotal}</span></div>
+                        ${overallDiscount > 0 ? `<div class="inv-total-line"><span>Overall Discount</span><span>-₹${overallDiscount}</span></div>` : ''}
+                        <div class="inv-total-line grand"><span><i class="fa-solid fa-star"></i> Grand Total</span><span>₹${grandTotal}</span></div>
                     </div>
                     <div class="inv-footer">
                         <p><i class="fa-solid fa-bolt"></i> Thank you for choosing Tawakkal Cell World! <i class="fa-solid fa-bolt"></i></p>
@@ -1666,12 +1569,12 @@
                 clientAddress.value = '';
                 clientCityState.value = '';
                 clientEmail.value = '';
-                discountAmount.value = '0.00';
+                discountAmount.value = '0';
                 lineItems = [
-                    { id: nextId++, description: 'Smartphone Repair', quantity: 1, rate: 800.00, discount: 0 },
-                    { id: nextId++, description: 'Screen Protector Installation', quantity: 2, rate: 150.00,
+                    { id: nextId++, description: 'Smartphone Repair', quantity: 1, rate: 800, discount: 0 },
+                    { id: nextId++, description: 'Screen Protector Installation', quantity: 2, rate: 150,
                         discount: 5 },
-                    { id: nextId++, description: 'USB Cable', quantity: 3, rate: 99.00, discount: 0 },
+                    { id: nextId++, description: 'USB Cable', quantity: 3, rate: 99, discount: 0 },
                 ];
                 renderLineItems();
                 updateTotals();
